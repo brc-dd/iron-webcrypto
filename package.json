@@ -5,7 +5,8 @@
     "postinstall": "patch-package && (is-ci || husky install)",
     "lint": "lint-staged --allow-empty -p false",
     "lint:all": "git add . && pnpm lint --all --no-stash",
-    "release": "pnpm lint:all && pnpm build && release-it",
+    "prerelease": "pnpm i && pnpm lint:all && pnpm build && pnpm test",
+    "release": "pnpm prerelease && release-it",
     "test": "mocha -r ts-node/register src/**/*.spec.ts"
   },
   "devDependencies": {
