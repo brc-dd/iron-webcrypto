@@ -1,0 +1,6 @@
+{
+  "*.{json,ts}": "replace '{\\n' '{ '",
+  "*": "prettier --write --ignore-unknown",
+  "package*.json": "prettier-package-json --write",
+  "*.ts": "eslint --fix --max-warnings 0"
+}

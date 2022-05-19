@@ -1,0 +1,8 @@
+{
+  "editor.codeActionsOnSave": ["source.fixAll.format", "source.fixAll.eslint"],
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[ignore][properties][shellscript]": { "editor.defaultFormatter": "foxundermoon.shell-format" },
+  "[svg][xml]": { "editor.defaultFormatter": "DotJoshJohnson.xml" },
+  "editor.formatOnSave": false,
+  "eslint.probe": ["typescript"]
+}
