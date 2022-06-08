@@ -32,8 +32,8 @@ const Iron = require('iron-webcrypto');
 import * as Iron from 'iron-webcrypto';
 ```
 
-Then modify function calls to pass a Web Crypto implementation as first param.
-For example:
+Then modify function calls to pass a Web Crypto implementation as the first
+param. For example:
 
 ```js
 Iron.seal(obj, password, Iron.defaults);
@@ -46,8 +46,8 @@ Iron.seal(_crypto, obj, password, Iron.defaults);
 ```
 
 where `_crypto` is your Web Crypto implementation. Generally this will available
-in your context (like `globalThis.crypto` in browsers/edge runtimes,
+in your context (for example, `globalThis.crypto` in browsers/edge runtimes,
 `globalThis.crypto.webcrypto` in newer Node.js versions). However, you may also
-need to polyfill this (like in case of older Node.js versions). We recommend
-using [`@peculiar/webcrypto`](https://www.npmjs.com/package/@peculiar/webcrypto)
-for that.
+need to polyfill this (for older Node.js versions). We recommend using
+[`@peculiar/webcrypto`](https://www.npmjs.com/package/@peculiar/webcrypto) for
+that.
