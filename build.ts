@@ -21,7 +21,7 @@ const copyFiles = (src: string, dest = src): void => {
 
 // remove files other than output
 readdirSync(join(__dirname, 'dist')).forEach((file) => {
-  if (!/^crypto\.js|index\.(d\.ts|js)$/.test(file)) unlinkSync(join(__dirname, 'dist', file));
+  if (!/^index\.(d\.ts|js)$/.test(file)) unlinkSync(join(__dirname, 'dist', file));
 });
 
 // copy relevant files to dist

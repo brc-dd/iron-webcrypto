@@ -12,12 +12,10 @@
   },
   "main": "index.js",
   "files": [
-    "crypto.js",
     "index.d.ts"
   ],
   "types": "index.d.ts",
   "dependencies": {
-    "@peculiar/webcrypto": "^1",
     "buffer": "^6"
   },
   "keywords": [

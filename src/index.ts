@@ -1,7 +1,6 @@
 /// <reference path="./types.d.ts" />
 
 import { Buffer } from 'buffer/';
-import { crypto } from './crypto';
 
 export const base64urlEncode = (value: _Buffer | string): string =>
   (Buffer.isBuffer(value) ? value : Buffer.from(value))
@@ -48,30 +47,33 @@ export const macPrefix = `Fe26.${macFormatVersion}`;
 
 /**
  * Generates cryptographically strong pseudorandom bytes.
+ * @param _crypto Custom WebCrypto implementation
  * @param size Number of bytes to generate
  * @returns _Buffer
  */
-const randomBytes = (size: number): _Buffer => {
+const randomBytes = (_crypto: Crypto, size: number): _Buffer => {
   const bytes = Buffer.allocUnsafe(size);
-  crypto.getRandomValues(bytes);
+  _crypto.getRandomValues(bytes);
   return bytes;
 };
 
 /**
  * Generate cryptographically strong pseudorandom bits.
+ * @param _crypto Custom WebCrypto implementation
  * @param bits Number of bits to generate
  * @returns _Buffer
  */
-export const randomBits = (bits: number): _Buffer => {
+export const randomBits = (_crypto: Crypto, bits: number): _Buffer => {
   if (bits < 1) throw Error('Invalid random bits count');
   const bytes = Math.ceil(bits / 8);
-  return randomBytes(bytes);
+  return randomBytes(_crypto, bytes);
 };
 
 /**
  * Provides an asynchronous Password-Based Key Derivation Function 2 (PBKDF2) implementation.
  */
 const pbkdf2 = async (
+  _crypto: Crypto,
   password: string,
   salt: string,
   iterations: number,
@@ -80,22 +82,24 @@ const pbkdf2 = async (
 ): Promise<_Buffer> => {
   const textEncoder = new TextEncoder();
   const passwordBuffer = textEncoder.encode(password);
-  const importedKey = await crypto.subtle.importKey('raw', passwordBuffer, 'PBKDF2', false, [
+  const importedKey = await _crypto.subtle.importKey('raw', passwordBuffer, 'PBKDF2', false, [
     'deriveBits',
   ]);
   const saltBuffer = textEncoder.encode(salt);
   const params = { name: 'PBKDF2', hash, salt: saltBuffer, iterations };
-  const derivation = await crypto.subtle.deriveBits(params, importedKey, keyLength * 8);
+  const derivation = await _crypto.subtle.deriveBits(params, importedKey, keyLength * 8);
   return Buffer.from(derivation);
 };
 
 /**
  * Generates a key from the password.
+ * @param _crypto Custom WebCrypto implementation
  * @param password - A password string or buffer key
  * @param options - Object used to customize the key derivation algorithm
  * @returns An object with keys: key, salt, iv
  */
 export const generateKey = async (
+  _crypto: Crypto,
   password: Password,
   options: GenerateKeyOptions,
 ): Promise<Key> => {
@@ -124,18 +128,19 @@ export const generateKey = async (
     if (!salt) {
       const { saltBits = 0 } = options;
       if (!saltBits) throw new Error('Missing salt and saltBits options');
-      const randomSalt = randomBits(saltBits);
+      const randomSalt = randomBits(_crypto, saltBits);
       salt = randomSalt.toString('hex');
     }
 
     const derivedKey = await pbkdf2(
+      _crypto,
       password,
       salt,
       options.iterations,
       algorithm.keyBits / 8,
       'SHA-1',
     );
-    const importedEncryptionKey = await crypto.subtle.importKey(
+    const importedEncryptionKey = await _crypto.subtle.importKey(
       'raw',
       derivedKey,
       id,
@@ -148,31 +153,33 @@ export const generateKey = async (
     //
   } else {
     if (password.length < algorithm.keyBits / 8) throw new Error('Key buffer (password) too small');
-    result.key = await crypto.subtle.importKey('raw', password, id, false, usage);
+    result.key = await _crypto.subtle.importKey('raw', password, id, false, usage);
     result.salt = '';
   }
 
   if (options.iv) result.iv = options.iv;
-  else if ('ivBits' in algorithm) result.iv = randomBits(algorithm.ivBits);
+  else if ('ivBits' in algorithm) result.iv = randomBits(_crypto, algorithm.ivBits);
   return result as Key;
 };
 
 /**
  * Encrypts data.
+ * @param _crypto Custom WebCrypto implementation
  * @param password A password string or buffer key
  * @param options Object used to customize the key derivation algorithm
  * @param data String to encrypt
  * @returns An object with keys: encrypted, key
  */
 export const encrypt = async (
+  _crypto: Crypto,
   password: Password,
   options: GenerateKeyOptions,
   data: string,
 ): Promise<{ encrypted: _Buffer; key: Key }> => {
-  const key = await generateKey(password, options);
+  const key = await generateKey(_crypto, password, options);
   const textEncoder = new TextEncoder();
   const textBuffer = textEncoder.encode(data);
-  const encrypted = (await crypto.subtle.encrypt(
+  const encrypted = (await _crypto.subtle.encrypt(
     { name: algorithms[options.algorithm].name, iv: key.iv },
     key.key,
     textBuffer,
@@ -182,18 +189,20 @@ export const encrypt = async (
 
 /**
  * Decrypts data.
+ * @param _crypto Custom WebCrypto implementation
  * @param password A password string or buffer key
  * @param options Object used to customize the key derivation algorithm
  * @param data _Buffer to decrypt
  * @returns Decrypted string
  */
 export const decrypt = async (
+  _crypto: Crypto,
   password: Password,
   options: GenerateKeyOptions,
   data: _Buffer | string,
 ): Promise<string> => {
-  const key = await generateKey(password, options);
-  const decrypted = (await crypto.subtle.decrypt(
+  const key = await generateKey(_crypto, password, options);
+  const decrypted = (await _crypto.subtle.decrypt(
     { name: algorithms[options.algorithm].name, iv: key.iv },
     key.key,
     Buffer.isBuffer(data) ? data : Buffer.from(data),
@@ -204,20 +213,22 @@ export const decrypt = async (
 
 /**
  * Calculates a HMAC digest.
+ * @param _crypto Custom WebCrypto implementation
  * @param password A password string or buffer
  * @param options Object used to customize the key derivation algorithm
  * @param data String to calculate the HMAC over
  * @returns An object with keys: digest, salt
  */
 export const hmacWithPassword = async (
+  _crypto: Crypto,
   password: Password,
   options: GenerateKeyOptions,
   data: string,
 ): Promise<HMacResult> => {
-  const key = await generateKey(password, { ...options, hmac: true });
+  const key = await generateKey(_crypto, password, { ...options, hmac: true });
   const textEncoder = new TextEncoder();
   const textBuffer = textEncoder.encode(data);
-  const signed = await crypto.subtle.sign({ name: 'HMAC' }, key.key, textBuffer);
+  const signed = await _crypto.subtle.sign({ name: 'HMAC' }, key.key, textBuffer);
   const digest = base64urlEncode(Buffer.from(signed));
   return { digest, salt: key.salt };
 };
@@ -238,12 +249,14 @@ const normalizePassword = (password: RawPassword): password.Specific => {
 
 /**
  * Serializes, encrypts, and signs objects into an iron protocol string.
+ * @param _crypto Custom WebCrypto implementation
  * @param object Data being sealed
  * @param password A string, buffer or object
  * @param options Object used to customize the key derivation algorithm
  * @returns Iron sealed string
  */
 export const seal = async (
+  _crypto: Crypto,
   object: unknown,
   password: RawPassword,
   options: SealOptions,
@@ -259,14 +272,14 @@ export const seal = async (
   const { id = '' } = pass;
   if (id && !/^\w+$/.test(id)) throw new Error('Invalid password id');
 
-  const { encrypted, key } = await encrypt(pass.encryption, opts.encryption, objectString);
+  const { encrypted, key } = await encrypt(_crypto, pass.encryption, opts.encryption, objectString);
 
   const encryptedB64 = base64urlEncode(encrypted);
   const iv = base64urlEncode(key.iv);
   const expiration = opts.ttl ? now + opts.ttl : '';
   const macBaseString = `${macPrefix}*${id}*${key.salt}*${iv}*${encryptedB64}*${expiration}`;
 
-  const mac = await hmacWithPassword(pass.integrity, opts.integrity, macBaseString);
+  const mac = await hmacWithPassword(_crypto, pass.integrity, opts.integrity, macBaseString);
   const sealed = `${macBaseString}*${mac.salt}*${mac.digest}`;
   return sealed;
 };
@@ -288,12 +301,14 @@ const fixedTimeComparison = (a: string, b: string): boolean => {
 
 /**
  * Verifies, decrypts, and reconstruct an iron protocol string into an object.
+ * @param _crypto Custom WebCrypto implementation
  * @param sealed The iron protocol string generated with seal()
  * @param password A string, buffer, or object
  * @param options Object used to customize the key derivation algorithm
  * @returns The verified decrypted object
  */
 export const unseal = async (
+  _crypto: Crypto,
   sealed: string,
   password: Password | password.Hash,
   options: SealOptions,
@@ -339,7 +354,7 @@ export const unseal = async (
 
   const macOptions: GenerateKeyOptions = opts.integrity;
   macOptions.salt = hmacSalt;
-  const mac = await hmacWithPassword(pass.integrity, macOptions, macBaseString);
+  const mac = await hmacWithPassword(_crypto, pass.integrity, macOptions, macBaseString);
 
   if (!fixedTimeComparison(mac.digest, hmac)) throw new Error('Bad hmac value');
 
@@ -348,6 +363,6 @@ export const unseal = async (
   decryptOptions.salt = encryptionSalt;
   decryptOptions.iv = Buffer.from(encryptionIv, 'base64');
 
-  const decrypted = await decrypt(pass.encryption, decryptOptions, encrypted);
+  const decrypted = await decrypt(_crypto, pass.encryption, decryptOptions, encrypted);
   return JSON.parse(decrypted) as unknown;
 };

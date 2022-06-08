@@ -1,7 +1,7 @@
-# iron-webcrypto
+# iron-webcrypto (WIP)
 
-This module is a drop-in replacement for
-[`@hapi/iron`](https://hapi.dev/module/iron/), written using the
+This module is a replacement for [`@hapi/iron`](https://hapi.dev/module/iron/),
+written using the
 [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
 that makes it compatible with browser and edge environments.
 
@@ -31,3 +31,23 @@ const Iron = require('iron-webcrypto');
 // or
 import * as Iron from 'iron-webcrypto';
 ```
+
+Then modify function calls to pass a Web Crypto implementation as first param.
+For example:
+
+```js
+Iron.seal(obj, password, Iron.defaults);
+```
+
+becomes:
+
+```js
+Iron.seal(_crypto, obj, password, Iron.defaults);
+```
+
+where `_crypto` is your Web Crypto implementation. Generally this will available
+in your context (like `globalThis.crypto` in browsers/edge runtimes,
+`globalThis.crypto.webcrypto` in newer Node.js versions). However, you may also
+need to polyfill this (like in case of older Node.js versions). We recommend
+using [`@peculiar/webcrypto`](https://www.npmjs.com/package/@peculiar/webcrypto)
+for that.
