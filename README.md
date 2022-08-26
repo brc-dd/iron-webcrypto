@@ -1,9 +1,12 @@
-# iron-webcrypto (WIP)
+# iron-webcrypto (beta)
 
 This module is a replacement for [`@hapi/iron`](https://hapi.dev/module/iron/),
 written using the
 [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
 that makes it compatible with browser and edge environments.
+
+> Check out [**vvo/iron-session**](https://github.com/vvo/iron-session) to see
+> this module in use!
 
 ---
 
