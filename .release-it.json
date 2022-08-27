@@ -1,7 +1,6 @@
 {
   "git": { "commitMessage": "chore: release v${version}" },
   "github": { "release": true, "releaseName": "v${version}" },
-  "npm": true,
   "plugins": {
     "@release-it/conventional-changelog": {
       "preset": "conventionalcommits",
