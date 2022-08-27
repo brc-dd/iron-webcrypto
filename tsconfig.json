@@ -8,12 +8,7 @@
     "declaration": true,
     "exactOptionalPropertyTypes": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "dist",
-    "paths": { "@/*": ["*"] },
-    "plugins": [
-      { "transform": "typescript-transform-paths" },
-      { "transform": "typescript-transform-paths", "afterDeclarations": true }
-    ]
+    "outDir": "dist"
   },
-  "exclude": ["build.ts", "src/**.spec.ts", "dist"]
+  "exclude": ["src/**.spec.ts", "dist"]
 }

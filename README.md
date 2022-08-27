@@ -19,21 +19,7 @@ npm add iron-webcrypto
 npm remove @hapi/iron
 ```
 
-and change:
-
-```js
-const Iron = require('@hapi/iron');
-// or
-import Iron from '@hapi/iron';
-```
-
-to:
-
-```js
-const Iron = require('iron-webcrypto');
-// or
-import * as Iron from 'iron-webcrypto';
-```
+and update imports.
 
 Then modify function calls to pass a Web Crypto implementation as the first
 param. For example:

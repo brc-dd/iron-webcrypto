@@ -1,31 +1,52 @@
 {
-  "private": true,
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "iron-webcrypto",
+  "version": "0.1.0",
+  "description": "a cryptographic utility for sealing-unsealing a JSON object using symmetric key encryption with message integrity verification",
+  "keywords": [
+    "authentication",
+    "data integrity",
+    "encryption",
+    "webcrypto"
+  ],
+  "bugs": {
+    "url": "https://github.com/brc-dd/iron-webcrypto",
+    "email": "brc-dd@hotmail.com"
+  },
+  "repository": "github:brc-dd/iron-webcrypto",
+  "license": "MIT",
+  "author": "Divyansh Singh <brc-dd@hotmail.com> (https://github.com/brc-dd)",
+  "sideEffects": false,
+  "exports": {
+    "require": "./dist/index.js",
+    "import": "./dist/index.mjs",
+    "types": "./dist/index.d.ts"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "browser": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/index.d.ts"
+  ],
   "scripts": {
-    "build": "shx rm -rf dist && ttsc && ts-node build.ts",
-    "postinstall": "patch-package && (is-ci || husky install)",
-    "lint": "lint-staged --allow-empty -p false",
-    "lint:all": "git add . && pnpm lint --all --no-stash",
-    "prerelease": "pnpm i && pnpm lint:all && pnpm build && pnpm test",
-    "release": "pnpm prerelease && release-it",
-    "test": "mocha -r ts-node/register src/**/*.spec.ts"
+    "build": "shx rm -rf dist && tsup ./src/index.ts --dts-resolve --format esm,cjs --minify --treeshake",
+    "lint": "lefthook run pre-commit",
+    "prerelease": "pnpm i && pnpm lint && pnpm build && pnpm test",
+    "release": "release-it",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@commitlint/cli": "latest",
     "@commitlint/config-conventional": "latest",
-    "@milahu/patch-package": "latest",
     "@peculiar/webcrypto": "latest",
-    "@release-it/conventional-changelog": "^4",
+    "@release-it/conventional-changelog": "latest",
     "@tsconfig/node12": "latest",
-    "@types/chai": "latest",
-    "@types/chai-as-promised": "latest",
-    "@types/mocha": "latest",
     "@types/node": "latest",
     "@types/webpack-env": "latest",
     "@typescript-eslint/eslint-plugin": "latest",
     "@typescript-eslint/parser": "latest",
     "buffer": "latest",
-    "chai": "latest",
-    "chai-as-promised": "latest",
     "eslint": "latest",
     "eslint-config-airbnb-base": "latest",
     "eslint-config-airbnb-typescript": "latest",
@@ -36,19 +57,19 @@
     "eslint-plugin-import": "latest",
     "eslint-plugin-prettier": "latest",
     "eslint-plugin-security": "latest",
-    "husky": "latest",
     "is-ci": "latest",
-    "lint-staged": "12.4.1",
-    "mocha": "latest",
+    "lefthook": "latest",
     "prettier": "latest",
-    "prettier-package-json": "2.6.3",
-    "release-it": "^14",
-    "release-it-yarn-workspaces": "latest",
+    "prettier-plugin-packagejson": "latest",
+    "release-it": "latest",
     "replace": "latest",
     "shx": "latest",
     "ts-node": "latest",
-    "ttypescript": "latest",
+    "tsup": "latest",
     "typescript": "latest",
-    "typescript-transform-paths": "latest"
+    "vitest": "latest"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
   }
 }

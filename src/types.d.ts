@@ -1,10 +1,9 @@
-// eslint-disable-next-line @typescript-eslint/naming-convention
-type _Buffer = import('buffer/').Buffer;
+import type { Buffer } from 'buffer/index.js';
 
 /**
  * seal() method options.
  */
-type SealOptionsSub = {
+export type SealOptionsSub = {
   /**
    * The length of the salt (random buffer used to ensure that two identical objects will generate a different encrypted result). Defaults to 256.
    */
@@ -29,7 +28,7 @@ type SealOptionsSub = {
 /**
  * Options for customizing the key derivation algorithm used to generate encryption and integrity verification keys as well as the algorithms and salt sizes used.
  */
-type SealOptions = {
+export type SealOptions = {
   /**
    * Encryption step options.
    */
@@ -59,29 +58,32 @@ type SealOptions = {
 /**
  * Password secret string or buffer.
  */
-type Password = _Buffer | string;
+export type Password = Buffer | string;
 
 /**
  * generateKey() method options.
  */
-type GenerateKeyOptions = Pick<SealOptionsSub, 'algorithm' | 'iterations' | 'minPasswordlength'> & {
+export type GenerateKeyOptions = Pick<
+  SealOptionsSub,
+  'algorithm' | 'iterations' | 'minPasswordlength'
+> & {
   saltBits?: number | undefined;
   salt?: string | undefined;
-  iv?: _Buffer | undefined;
+  iv?: Buffer | undefined;
   hmac?: boolean | undefined;
 };
 
 /**
  * Generated internal key object.
  */
-type Key = { key: CryptoKey; salt: string; iv: _Buffer };
+export type Key = { key: CryptoKey; salt: string; iv: Buffer };
 
 /**
  * Generated HMAC internal results.
  */
-type HMacResult = { digest: string; salt: string };
+export type HMacResult = { digest: string; salt: string };
 
-declare namespace password {
+export declare namespace password {
   /**
    * Secret object with optional id.
    */
@@ -98,4 +100,4 @@ declare namespace password {
   type Hash = Record<string, Password | Secret | Specific>;
 }
 
-type RawPassword = Password | password.Secret | password.Specific;
+export type RawPassword = Password | password.Secret | password.Specific;

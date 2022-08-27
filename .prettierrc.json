@@ -12,5 +12,6 @@
   "tabWidth": 2,
   "trailingComma": "all",
   "useTabs": false,
-  "overrides": [{ "files": "*.md", "options": { "printWidth": 80 } }]
+  "overrides": [{ "files": "*.md", "options": { "printWidth": 80 } }],
+  "plugins": ["prettier-plugin-packagejson"]
 }

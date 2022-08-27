@@ -1,8 +1,15 @@
-/// <reference path="./types.d.ts" />
+import { Buffer } from 'buffer/index.js';
+import type {
+  GenerateKeyOptions,
+  HMacResult,
+  Key,
+  password,
+  Password,
+  RawPassword,
+  SealOptions,
+} from './types.js';
 
-import { Buffer } from 'buffer/';
-
-export const base64urlEncode = (value: _Buffer | string): string =>
+export const base64urlEncode = (value: Buffer | string): string =>
   (Buffer.isBuffer(value) ? value : Buffer.from(value))
     .toString('base64')
     .replace(/\+/g, '-')
@@ -49,9 +56,9 @@ export const macPrefix = `Fe26.${macFormatVersion}`;
  * Generates cryptographically strong pseudorandom bytes.
  * @param _crypto Custom WebCrypto implementation
  * @param size Number of bytes to generate
- * @returns _Buffer
+ * @returns Buffer
  */
-const randomBytes = (_crypto: Crypto, size: number): _Buffer => {
+const randomBytes = (_crypto: Crypto, size: number): Buffer => {
   const bytes = Buffer.allocUnsafe(size);
   _crypto.getRandomValues(bytes);
   return bytes;
@@ -61,9 +68,9 @@ const randomBytes = (_crypto: Crypto, size: number): _Buffer => {
  * Generate cryptographically strong pseudorandom bits.
  * @param _crypto Custom WebCrypto implementation
  * @param bits Number of bits to generate
- * @returns _Buffer
+ * @returns Buffer
  */
-export const randomBits = (_crypto: Crypto, bits: number): _Buffer => {
+export const randomBits = (_crypto: Crypto, bits: number): Buffer => {
   if (bits < 1) throw Error('Invalid random bits count');
   const bytes = Math.ceil(bits / 8);
   return randomBytes(_crypto, bytes);
@@ -79,7 +86,7 @@ const pbkdf2 = async (
   iterations: number,
   keyLength: number,
   hash: HashAlgorithmIdentifier,
-): Promise<_Buffer> => {
+): Promise<Buffer> => {
   const textEncoder = new TextEncoder();
   const passwordBuffer = textEncoder.encode(password);
   const importedKey = await _crypto.subtle.importKey('raw', passwordBuffer, 'PBKDF2', false, [
@@ -175,15 +182,15 @@ export const encrypt = async (
   password: Password,
   options: GenerateKeyOptions,
   data: string,
-): Promise<{ encrypted: _Buffer; key: Key }> => {
+): Promise<{ encrypted: Buffer; key: Key }> => {
   const key = await generateKey(_crypto, password, options);
   const textEncoder = new TextEncoder();
   const textBuffer = textEncoder.encode(data);
-  const encrypted = (await _crypto.subtle.encrypt(
+  const encrypted = await _crypto.subtle.encrypt(
     { name: algorithms[options.algorithm].name, iv: key.iv },
     key.key,
     textBuffer,
-  )) as ArrayBuffer;
+  );
   return { encrypted: Buffer.from(encrypted), key };
 };
 
@@ -192,21 +199,21 @@ export const encrypt = async (
  * @param _crypto Custom WebCrypto implementation
  * @param password A password string or buffer key
  * @param options Object used to customize the key derivation algorithm
- * @param data _Buffer to decrypt
+ * @param data Buffer to decrypt
  * @returns Decrypted string
  */
 export const decrypt = async (
   _crypto: Crypto,
   password: Password,
   options: GenerateKeyOptions,
-  data: _Buffer | string,
+  data: Buffer | string,
 ): Promise<string> => {
   const key = await generateKey(_crypto, password, options);
-  const decrypted = (await _crypto.subtle.decrypt(
+  const decrypted = await _crypto.subtle.decrypt(
     { name: algorithms[options.algorithm].name, iv: key.iv },
     key.key,
     Buffer.isBuffer(data) ? data : Buffer.from(data),
-  )) as ArrayBuffer;
+  );
   const textDecoder = new TextDecoder();
   return textDecoder.decode(decrypted);
 };
