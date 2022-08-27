@@ -1,3 +1,7 @@
+
+
+## [0.2.0](https://github.com/brc-dd/iron-webcrypto/compare/0.1.0...0.2.0) (2022-08-27)
+
 ## [0.1.0](https://github.com/brc-dd/iron-webcrypto/compare/0.0.2...0.1.0) (2022-06-08)
 
 ### Features
