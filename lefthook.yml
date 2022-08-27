@@ -1,3 +1,7 @@
+skip_output:
+  - meta
+  - execution
+
 commit-msg:
   commands:
     commitlint:

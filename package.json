@@ -43,7 +43,6 @@
     "@release-it/conventional-changelog": "latest",
     "@tsconfig/node12": "latest",
     "@types/node": "latest",
-    "@types/webpack-env": "latest",
     "@typescript-eslint/eslint-plugin": "latest",
     "@typescript-eslint/parser": "latest",
     "buffer": "latest",
