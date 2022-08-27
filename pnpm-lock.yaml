@@ -21,7 +21,6 @@ specifiers:
   eslint-plugin-import: latest
   eslint-plugin-prettier: latest
   eslint-plugin-security: latest
-  is-ci: latest
   lefthook: latest
   prettier: latest
   prettier-plugin-packagejson: latest
@@ -54,7 +53,6 @@ devDependencies:
   eslint-plugin-import: 2.26.0_kfgnko7g33xg4ezaqf5rqhlrhi
   eslint-plugin-prettier: 4.2.1_tgumt6uwl2md3n6uqnggd6wvce
   eslint-plugin-security: 1.5.0
-  is-ci: 3.0.1
   lefthook: 1.1.1
   prettier: 2.7.1
   prettier-plugin-packagejson: 2.2.18_prettier@2.7.1

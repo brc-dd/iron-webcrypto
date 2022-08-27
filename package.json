@@ -57,7 +57,6 @@
     "eslint-plugin-import": "latest",
     "eslint-plugin-prettier": "latest",
     "eslint-plugin-security": "latest",
-    "is-ci": "latest",
     "lefthook": "latest",
     "prettier": "latest",
     "prettier-plugin-packagejson": "latest",
