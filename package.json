@@ -33,7 +33,7 @@
     "build": "shx rm -rf dist && tsup ./src/index.ts --dts-resolve --format esm,cjs --minify --treeshake",
     "lint": "lefthook run pre-commit",
     "prerelease": "pnpm i && pnpm lint && pnpm build && pnpm test",
-    "release": "release-it",
+    "release": "pnpm prerelease && release-it",
     "test": "vitest run"
   },
   "devDependencies": {
