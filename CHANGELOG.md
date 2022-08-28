@@ -1,5 +1,12 @@
 
 
+## [0.2.1](https://github.com/brc-dd/iron-webcrypto/compare/0.2.0...0.2.1) (2022-08-28)
+
+
+### Performance Improvements
+
+* externalize buffer and re-export all types ([df68feb](https://github.com/brc-dd/iron-webcrypto/commit/df68feb7d8bcfffe7f66769c15821ece1c2f1d47))
+
 ## [0.2.0](https://github.com/brc-dd/iron-webcrypto/compare/0.1.0...0.2.0) (2022-08-27)
 
 ## [0.1.0](https://github.com/brc-dd/iron-webcrypto/compare/0.0.2...0.1.0) (2022-06-08)
