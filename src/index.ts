@@ -10,6 +10,7 @@ import type {
 } from './types.js';
 
 // re-export all types
+export { Buffer };
 export * from './types.js';
 
 export const base64urlEncode = (value: Buffer | string): string =>
