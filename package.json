@@ -30,11 +30,14 @@
     "dist/index.d.ts"
   ],
   "scripts": {
-    "build": "shx rm -rf dist && tsup ./src/index.ts --dts-resolve --format esm,cjs --minify --treeshake",
+    "build": "shx rm -rf dist && tsup ./src/index.ts --dts --format esm,cjs --minify --treeshake",
     "lint": "lefthook run pre-commit",
     "prerelease": "pnpm i && pnpm lint && pnpm build && pnpm test",
     "release": "pnpm prerelease && release-it",
     "test": "vitest run"
+  },
+  "dependencies": {
+    "buffer": "^6"
   },
   "devDependencies": {
     "@commitlint/cli": "latest",
@@ -45,7 +48,6 @@
     "@types/node": "latest",
     "@typescript-eslint/eslint-plugin": "latest",
     "@typescript-eslint/parser": "latest",
-    "buffer": "latest",
     "eslint": "latest",
     "eslint-config-airbnb-base": "latest",
     "eslint-config-airbnb-typescript": "latest",

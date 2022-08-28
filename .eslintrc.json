@@ -29,6 +29,7 @@
     "import/no-extraneous-dependencies": "off",
     "@typescript-eslint/init-declarations": "off",
     "@typescript-eslint/triple-slash-reference": "off",
+    "@typescript-eslint/no-namespace": "off",
     "no-bitwise": "off",
 
     "@typescript-eslint/array-type": ["error", { "default": "generic" }],

@@ -9,6 +9,9 @@ import type {
   SealOptions,
 } from './types.js';
 
+// re-export all types
+export * from './types.js';
+
 export const base64urlEncode = (value: Buffer | string): string =>
   (Buffer.isBuffer(value) ? value : Buffer.from(value))
     .toString('base64')
