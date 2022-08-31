@@ -1,13 +1,10 @@
 {
   "recommendations": [
-    "arcanis.vscode-zipfs",
     "davidanson.vscode-markdownlint",
     "dbaeumer.vscode-eslint",
-    "DotJoshJohnson.xml",
     "editorconfig.editorconfig",
     "esbenp.prettier-vscode",
     "foxundermoon.shell-format",
-    "ms-vscode.vscode-typescript-next",
     "rohit-gohri.format-code-action",
     "streetsidesoftware.code-spell-checker",
     "visualstudioexptteam.vscodeintellicode"
