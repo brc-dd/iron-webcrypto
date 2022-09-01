@@ -14,13 +14,16 @@
     "email": "brc-dd@hotmail.com"
   },
   "repository": "github:brc-dd/iron-webcrypto",
+  "funding": "https://github.com/sponsors/brc-dd",
   "license": "MIT",
   "author": "Divyansh Singh <brc-dd@hotmail.com> (https://github.com/brc-dd)",
   "sideEffects": false,
   "exports": {
-    "require": "./dist/index.js",
-    "import": "./dist/index.mjs",
-    "types": "./dist/index.d.ts"
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
   },
   "main": "dist/index.js",
   "module": "dist/index.mjs",
