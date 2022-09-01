@@ -1,5 +1,12 @@
 
 
+## [0.2.4](https://github.com/brc-dd/iron-webcrypto/compare/0.2.3...0.2.4) (2022-09-01)
+
+
+### Bug Fixes
+
+* include module bundle ([029bca0](https://github.com/brc-dd/iron-webcrypto/commit/029bca0d91984114319ac2db7b8348adc81c3470))
+
 ## [0.2.3](https://github.com/brc-dd/iron-webcrypto/compare/0.2.2...0.2.3) (2022-09-01)
 
 
