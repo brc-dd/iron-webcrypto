@@ -27,10 +27,9 @@
   },
   "main": "dist/index.js",
   "module": "dist/index.mjs",
-  "browser": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
-    "dist/index.d.ts"
+    "dist/*"
   ],
   "scripts": {
     "build": "shx rm -rf dist && tsup ./src/index.ts --dts --format esm,cjs --minify --treeshake",
