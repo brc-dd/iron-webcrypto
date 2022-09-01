@@ -1,5 +1,12 @@
 
 
+## [0.2.3](https://github.com/brc-dd/iron-webcrypto/compare/0.2.2...0.2.3) (2022-09-01)
+
+
+### Bug Fixes
+
+* typo in exports field ([0cd9032](https://github.com/brc-dd/iron-webcrypto/commit/0cd9032f14327775fff2ce4e06c502f4e2b764c1))
+
 ## [0.2.2](https://github.com/brc-dd/iron-webcrypto/compare/0.2.1...0.2.2) (2022-08-28)
 
 ## [0.2.1](https://github.com/brc-dd/iron-webcrypto/compare/0.2.0...0.2.1) (2022-08-28)
