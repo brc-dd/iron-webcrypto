@@ -3,7 +3,7 @@ import type { Buffer } from 'buffer/index.js';
 /**
  * seal() method options.
  */
-export type SealOptionsSub = {
+export interface SealOptionsSub {
   /**
    * The length of the salt (random buffer used to ensure that two identical objects will generate a different encrypted result). Defaults to 256.
    */
@@ -23,12 +23,12 @@ export type SealOptionsSub = {
    * Minimum password size. Defaults to 32.
    */
   minPasswordlength: number;
-};
+}
 
 /**
  * Options for customizing the key derivation algorithm used to generate encryption and integrity verification keys as well as the algorithms and salt sizes used.
  */
-export type SealOptions = {
+export interface SealOptions {
   /**
    * Encryption step options.
    */
@@ -53,7 +53,7 @@ export type SealOptions = {
    * Local clock time offset, expressed in number of milliseconds (positive or negative). Defaults to 0.
    */
   localtimeOffsetMsec: number;
-};
+}
 
 /**
  * Password secret string or buffer.
@@ -76,23 +76,37 @@ export type GenerateKeyOptions = Pick<
 /**
  * Generated internal key object.
  */
-export type Key = { key: CryptoKey; salt: string; iv: Buffer };
+export interface Key {
+  key: CryptoKey;
+  salt: string;
+  iv: Buffer;
+}
 
 /**
  * Generated HMAC internal results.
  */
-export type HMacResult = { digest: string; salt: string };
+export interface HMacResult {
+  digest: string;
+  salt: string;
+}
 
 export declare namespace password {
   /**
    * Secret object with optional id.
    */
-  type Secret = { id?: string | undefined; secret: Password };
+  interface Secret {
+    id?: string | undefined;
+    secret: Password;
+  }
 
   /**
    * Secret object with optional id and specified password for each encryption and integrity.
    */
-  type Specific = { id?: string | undefined; encryption: Password; integrity: Password };
+  interface Specific {
+    id?: string | undefined;
+    encryption: Password;
+    integrity: Password;
+  }
 
   /**
    * Key-value pairs hash of password id to value.
