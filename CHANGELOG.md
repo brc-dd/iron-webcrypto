@@ -1,5 +1,17 @@
 
 
+## [0.2.5](https://github.com/brc-dd/iron-webcrypto/compare/0.2.4...0.2.5) (2022-09-09)
+
+
+### Bug Fixes
+
+* return null if decrypted string is empty ([a87ed60](https://github.com/brc-dd/iron-webcrypto/commit/a87ed601aacd342d287c1ccf1b92dd1fec047d7c))
+
+
+### Performance Improvements
+
+* use interfaces instead of types ([e898dbf](https://github.com/brc-dd/iron-webcrypto/commit/e898dbf2138549f253117a0d6b500bd5b0332ea5))
+
 ## [0.2.4](https://github.com/brc-dd/iron-webcrypto/compare/0.2.3...0.2.4) (2022-09-01)
 
 
