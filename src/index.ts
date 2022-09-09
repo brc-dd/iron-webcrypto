@@ -316,7 +316,7 @@ const fixedTimeComparison = (a: string, b: string): boolean => {
  * @param sealed The iron protocol string generated with seal()
  * @param password A string, buffer, or object
  * @param options Object used to customize the key derivation algorithm
- * @returns The verified decrypted object
+ * @returns The verified decrypted object (can be null)
  */
 export const unseal = async (
   _crypto: Crypto,
@@ -375,5 +375,6 @@ export const unseal = async (
   decryptOptions.iv = Buffer.from(encryptionIv, 'base64');
 
   const decrypted = await decrypt(_crypto, pass.encryption, decryptOptions, encrypted);
-  return JSON.parse(decrypted) as unknown;
+  if (decrypted) return JSON.parse(decrypted) as unknown;
+  return null;
 };
