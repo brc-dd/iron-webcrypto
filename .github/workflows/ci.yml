@@ -6,8 +6,6 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]
-  schedule:
-    - cron: '0 0 */7 * *'
   workflow_dispatch:
 
 jobs:
