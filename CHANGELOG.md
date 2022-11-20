@@ -1,5 +1,7 @@
 
 
+## [0.2.6](https://github.com/brc-dd/iron-webcrypto/compare/0.2.5...0.2.6) (2022-11-20)
+
 ## [0.2.5](https://github.com/brc-dd/iron-webcrypto/compare/0.2.4...0.2.5) (2022-09-09)
 
 
