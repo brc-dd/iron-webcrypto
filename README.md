@@ -25,13 +25,13 @@ Then modify function calls to pass a Web Crypto implementation as the first
 param. For example:
 
 ```js
-Iron.seal(obj, password, Iron.defaults);
+Iron.seal(obj, password, Iron.defaults)
 ```
 
 becomes:
 
 ```js
-Iron.seal(_crypto, obj, password, Iron.defaults);
+Iron.seal(_crypto, obj, password, Iron.defaults)
 ```
 
 where `_crypto` is your Web Crypto implementation. Generally, this will
