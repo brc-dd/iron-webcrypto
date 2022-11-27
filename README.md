@@ -36,8 +36,24 @@ Iron.seal(_crypto, obj, password, Iron.defaults)
 
 where `_crypto` is your Web Crypto implementation. Generally, this will
 available in your context (for example, `globalThis.crypto` in browsers, edge
-runtimes, Deno, and Node.js v19+; `require('crypto').webcrypto` in Node.js
+runtimes, Deno[^1], and Node.js v19+; `require('crypto').webcrypto` in Node.js
 v15+). However, you may also need to polyfill this for older Node.js versions.
 We recommend using
 [`@peculiar/webcrypto`](https://www.npmjs.com/package/@peculiar/webcrypto) for
 that.
+
+[^1]:
+    You can use esm.sh for importing this module in Deno (and browsers).
+    Example:
+
+    ```ts
+    import * as Iron from 'https://esm.sh/iron-webcrypto@0.2.6'
+
+    const obj = { a: 1, b: 2, c: [3, 4, 5], d: { e: 'f' } }
+    const password = 'some_not_random_password_that_is_also_long_enough'
+
+    const sealed = await Iron.seal(crypto, obj, password, Iron.defaults)
+    const unsealed = await Iron.unseal(crypto, sealed, password, Iron.defaults)
+
+    console.log(unsealed)
+    ```
