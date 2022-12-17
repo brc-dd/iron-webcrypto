@@ -1,5 +1,12 @@
 
 
+## [0.2.7](https://github.com/brc-dd/iron-webcrypto/compare/0.2.6...0.2.7) (2022-12-17)
+
+
+### Bug Fixes
+
+* reorder exports to move types to top ([e3bb1cb](https://github.com/brc-dd/iron-webcrypto/commit/e3bb1cbe4dd465c4a29c335577dea06b7775210c))
+
 ## [0.2.6](https://github.com/brc-dd/iron-webcrypto/compare/0.2.5...0.2.6) (2022-11-20)
 
 ## [0.2.5](https://github.com/brc-dd/iron-webcrypto/compare/0.2.4...0.2.5) (2022-09-09)
