@@ -36,9 +36,9 @@ Iron.seal(_crypto, obj, password, Iron.defaults)
 
 where `_crypto` is your Web Crypto implementation. Generally, this will
 available in your context (for example, `globalThis.crypto` in browsers, edge
-runtimes, Deno[^1], and Node.js v19+; `require('crypto').webcrypto` in Node.js
-v15+). However, you may also need to polyfill this for older Node.js versions.
-We recommend using
+runtimes, Deno[^1], Bun and Node.js v19+; `require('crypto').webcrypto` in
+Node.js v15+). However, you may also need to polyfill this for older Node.js
+versions. We recommend using
 [`@peculiar/webcrypto`](https://www.npmjs.com/package/@peculiar/webcrypto) for
 that.
 
