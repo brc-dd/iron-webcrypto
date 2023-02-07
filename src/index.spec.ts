@@ -265,7 +265,7 @@ describe('Iron', () => {
       const mac = await Iron.hmacWithPassword(crypto, password, options, macBaseString)
       const ticket = `${macBaseString}*${mac.salt}*${mac.digest}`
       await expect(Iron.unseal(crypto, ticket, password, Iron.defaults)).rejects.toThrow(
-        'Invalid base64 string.'
+        'Invalid character ? in base64 string.'
       )
     })
 
@@ -277,7 +277,7 @@ describe('Iron', () => {
       const mac = await Iron.hmacWithPassword(crypto, password, options, macBaseString)
       const ticket = `${macBaseString}*${mac.salt}*${mac.digest}`
       await expect(Iron.unseal(crypto, ticket, password, Iron.defaults)).rejects.toThrow(
-        'Invalid base64 string.'
+        'Invalid character ? in base64 string.'
       )
     })
 
