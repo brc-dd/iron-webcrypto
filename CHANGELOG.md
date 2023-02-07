@@ -1,5 +1,12 @@
 
 
+## [0.4.0](https://github.com/brc-dd/iron-webcrypto/compare/0.3.1...0.4.0) (2023-02-07)
+
+
+### Features
+
+* drop dependency on buffer and use standard uint8array ([#5](https://github.com/brc-dd/iron-webcrypto/issues/5)) ([285bfd9](https://github.com/brc-dd/iron-webcrypto/commit/285bfd962553cc6996562887271ac5350a8b7028))
+
 ## [0.3.1](https://github.com/brc-dd/iron-webcrypto/compare/0.3.0...0.3.1) (2023-02-07)
 
 
