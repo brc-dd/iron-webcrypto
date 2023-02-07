@@ -20,19 +20,24 @@
   "sideEffects": false,
   "exports": {
     ".": {
+      "node": {
+        "types": "./dist/index.node.d.ts",
+        "import": "./dist/index.node.mjs",
+        "require": "./dist/index.node.cjs"
+      },
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "import": "./dist/index.mjs"
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
     }
   },
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
     "dist/*"
   ],
   "scripts": {
-    "build": "shx rm -rf dist && tsup ./src/index.ts --dts --format esm,cjs --minify --treeshake",
+    "build": "unbuild",
     "lint": "lefthook run pre-commit",
     "prerelease": "pnpm i && pnpm lint && pnpm build && pnpm test",
     "release": "pnpm prerelease && release-it",
@@ -42,36 +47,34 @@
     "buffer": "^6"
   },
   "devDependencies": {
-    "@commitlint/cli": "latest",
-    "@commitlint/config-conventional": "latest",
-    "@peculiar/webcrypto": "latest",
-    "@release-it/conventional-changelog": "latest",
-    "@tsconfig/node12": "latest",
-    "@types/node": "latest",
-    "@typescript-eslint/eslint-plugin": "latest",
-    "@typescript-eslint/parser": "latest",
-    "eslint": "latest",
-    "eslint-config-airbnb-base": "latest",
-    "eslint-config-airbnb-typescript": "latest",
-    "eslint-config-prettier": "latest",
-    "eslint-import-resolver-node": "latest",
-    "eslint-import-resolver-typescript": "latest",
-    "eslint-plugin-eslint-comments": "latest",
-    "eslint-plugin-import": "latest",
-    "eslint-plugin-prettier": "latest",
-    "eslint-plugin-security": "latest",
-    "lefthook": "latest",
-    "prettier": "latest",
-    "prettier-plugin-packagejson": "latest",
-    "release-it": "latest",
-    "replace": "latest",
-    "shx": "latest",
-    "ts-node": "latest",
-    "tsup": "latest",
-    "typescript": "latest",
-    "vitest": "latest"
+    "@commitlint/cli": "^17.4.2",
+    "@commitlint/config-conventional": "^17.4.2",
+    "@peculiar/webcrypto": "^1.4.1",
+    "@release-it/conventional-changelog": "^5.1.1",
+    "@tsconfig/node12": "^1.0.11",
+    "@types/node": "^18.11.19",
+    "@typescript-eslint/eslint-plugin": "^5.51.0",
+    "@typescript-eslint/parser": "^5.51.0",
+    "eslint": "^8.33.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-import-resolver-node": "^0.3.7",
+    "eslint-import-resolver-typescript": "^3.5.3",
+    "eslint-plugin-eslint-comments": "^3.2.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-security": "^1.7.1",
+    "lefthook": "^1.2.8",
+    "prettier": "^2.8.3",
+    "prettier-plugin-packagejson": "^2.4.2",
+    "release-it": "^15.6.0",
+    "replace": "^1.2.2",
+    "typescript": "^4.9.5",
+    "unbuild": "^1.1.1",
+    "vitest": "^0.28.4"
   },
-  "packageManager": "pnpm@7.16.1",
+  "packageManager": "pnpm@7.26.3",
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
   }
