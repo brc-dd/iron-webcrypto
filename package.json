@@ -45,7 +45,7 @@
     "@peculiar/webcrypto": "^1.4.1",
     "@release-it/conventional-changelog": "^5.1.1",
     "@tsconfig/node12": "^1.0.11",
-    "@types/node": "^18.11.19",
+    "@types/node": "^18.13.0",
     "@typescript-eslint/eslint-plugin": "^5.51.0",
     "@typescript-eslint/parser": "^5.51.0",
     "eslint": "^8.33.0",
