@@ -19,12 +19,12 @@
   "author": "Divyansh Singh <brc-dd@hotmail.com> (https://github.com/brc-dd)",
   "sideEffects": false,
   "exports": {
-    ".": {
-      "node": {
-        "types": "./dist/index.node.d.ts",
-        "import": "./dist/index.node.mjs",
-        "require": "./dist/index.node.cjs"
-      },
+    "node": {
+      "types": "./dist/index.node.d.ts",
+      "import": "./dist/index.node.mjs",
+      "require": "./dist/index.node.cjs"
+    },
+    "default": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
