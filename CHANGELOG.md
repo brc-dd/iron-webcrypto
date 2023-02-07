@@ -1,5 +1,12 @@
 
 
+## [0.3.0](https://github.com/brc-dd/iron-webcrypto/compare/0.2.7...0.3.0) (2023-02-07)
+
+
+### Bug Fixes
+
+* don't polyfill buffer on node ([#4](https://github.com/brc-dd/iron-webcrypto/issues/4)) ([421c853](https://github.com/brc-dd/iron-webcrypto/commit/421c85378785130b93ac13848827d7e850e641fe))
+
 ## [0.2.7](https://github.com/brc-dd/iron-webcrypto/compare/0.2.6...0.2.7) (2022-12-17)
 
 
