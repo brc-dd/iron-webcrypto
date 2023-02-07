@@ -33,6 +33,7 @@ rules:
   eslint-comments/no-unused-disable: error
   security/detect-object-injection: off # ts handles this
   import/prefer-default-export: off
+  import/no-extraneous-dependencies: off
   '@typescript-eslint/no-namespace': off
   no-bitwise: off
   '@typescript-eslint/array-type':

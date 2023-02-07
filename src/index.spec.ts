@@ -1,7 +1,5 @@
 /* eslint eslint-comments/no-unlimited-disable: off, @typescript-eslint/ban-ts-comment: off */
-
 import { Crypto } from '@peculiar/webcrypto'
-import { Buffer } from 'buffer/index.js'
 import { createHmac } from 'node:crypto'
 
 import { describe, expect, it } from 'vitest'
@@ -37,6 +35,20 @@ describe('Iron', () => {
 
     const options2 = Iron.clone(Iron.defaults)
     options2.localtimeOffsetMsec = -100000
+    const unsealed = await Iron.unseal(crypto, sealed, { default: password }, options2)
+    expect(unsealed).toEqual(obj)
+  })
+
+  it('unseal and sealed object without time offset', async () => {
+    const options = Iron.clone(Iron.defaults)
+    options.ttl = 200
+    // @ts-expect-error
+    delete options.localtimeOffsetMsec
+    const sealed = await Iron.seal(crypto, obj, password, options)
+
+    const options2 = Iron.clone(Iron.defaults)
+    // @ts-expect-error
+    delete options2.localtimeOffsetMsec
     const unsealed = await Iron.unseal(crypto, sealed, { default: password }, options2)
     expect(unsealed).toEqual(obj)
   })
@@ -143,7 +155,7 @@ describe('Iron', () => {
         minPasswordlength: 32,
       }
       await expect(Iron.generateKey(crypto, password, options)).rejects.toThrow(
-        'Attempt to allocate Buffer larger than maximum size'
+        'Invalid typed array length'
       )
     })
   })
@@ -174,7 +186,7 @@ describe('Iron', () => {
       const data = 'Not so random'
       const key = Iron.randomBits(crypto, 256)
       const hmac = createHmac(Iron.defaults.integrity.algorithm, key).update(data)
-      const digest = Iron.base64urlEncode(Buffer.from(hmac.digest()))
+      const digest = Iron.base64urlEncode(hmac.digest())
 
       const mac = await Iron.hmacWithPassword(crypto, key, Iron.defaults.integrity, data)
       expect(mac.digest).to.equal(digest)
@@ -253,7 +265,7 @@ describe('Iron', () => {
       const mac = await Iron.hmacWithPassword(crypto, password, options, macBaseString)
       const ticket = `${macBaseString}*${mac.salt}*${mac.digest}`
       await expect(Iron.unseal(crypto, ticket, password, Iron.defaults)).rejects.toThrow(
-        'bad decrypt'
+        'Invalid character ? in base64 string.'
       )
     })
 
@@ -265,7 +277,7 @@ describe('Iron', () => {
       const mac = await Iron.hmacWithPassword(crypto, password, options, macBaseString)
       const ticket = `${macBaseString}*${mac.salt}*${mac.digest}`
       await expect(Iron.unseal(crypto, ticket, password, Iron.defaults)).rejects.toThrow(
-        'bad decrypt'
+        'Invalid character ? in base64 string.'
       )
     })
 

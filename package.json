@@ -19,12 +19,7 @@
   "author": "Divyansh Singh <brc-dd@hotmail.com> (https://github.com/brc-dd)",
   "sideEffects": false,
   "exports": {
-    "node": {
-      "types": "./dist/index.node.d.ts",
-      "import": "./dist/index.node.mjs",
-      "require": "./dist/index.node.cjs"
-    },
-    "default": {
+    ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
@@ -43,10 +38,8 @@
     "release": "pnpm prerelease && release-it",
     "test": "vitest run"
   },
-  "dependencies": {
-    "buffer": "^6"
-  },
   "devDependencies": {
+    "@aws-sdk/util-base64": "^3.208.0",
     "@commitlint/cli": "^17.4.2",
     "@commitlint/config-conventional": "^17.4.2",
     "@peculiar/webcrypto": "^1.4.1",
@@ -77,5 +70,8 @@
   "packageManager": "pnpm@7.26.3",
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
+  },
+  "unbuild": {
+    "failOnWarn": false
   }
 }

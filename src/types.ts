@@ -1,5 +1,3 @@
-import type { Buffer } from 'buffer/index.js'
-
 /**
  * seal() method options.
  */
@@ -58,7 +56,7 @@ export interface SealOptions {
 /**
  * Password secret string or buffer.
  */
-export type Password = Buffer | string
+export type Password = Uint8Array | string
 
 /**
  * generateKey() method options.
@@ -69,7 +67,7 @@ export type GenerateKeyOptions = Pick<
 > & {
   saltBits?: number | undefined
   salt?: string | undefined
-  iv?: Buffer | undefined
+  iv?: Uint8Array | undefined
   hmac?: boolean | undefined
 }
 
@@ -79,7 +77,7 @@ export type GenerateKeyOptions = Pick<
 export interface Key {
   key: CryptoKey
   salt: string
-  iv: Buffer
+  iv: Uint8Array
 }
 
 /**

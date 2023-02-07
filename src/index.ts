@@ -1,4 +1,5 @@
-import { Buffer } from 'buffer/index.js'
+import { fromBase64 } from '@aws-sdk/util-base64/dist-es/fromBase64.browser'
+import { toBase64 } from '@aws-sdk/util-base64/dist-es/toBase64.browser'
 import type {
   GenerateKeyOptions,
   HMacResult,
@@ -12,12 +13,25 @@ import type {
 // re-export all types
 export * from './types.js'
 
-export const base64urlEncode = (value: Buffer | string): string =>
-  (Buffer.isBuffer(value) ? value : Buffer.from(value))
-    .toString('base64')
+export const stringToBuffer = (value: string): Uint8Array => {
+  return new TextEncoder().encode(value)
+}
+
+export const bufferToString = (value: Uint8Array): string => {
+  return new TextDecoder().decode(value)
+}
+
+export const base64urlEncode = (value: Uint8Array | string): string =>
+  toBase64(value instanceof Uint8Array ? value : stringToBuffer(value))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=/g, '')
+
+export const base64urlDecode = (value: string): Uint8Array =>
+  fromBase64(
+    value.replace(/-/g, '+').replace(/_/g, '/') +
+      Array(((4 - (value.length % 4)) % 4) + 1).join('=')
+  )
 
 /**
  * The default encryption and integrity settings.
@@ -61,8 +75,8 @@ export const macPrefix = `Fe26.${macFormatVersion}`
  * @param size Number of bytes to generate
  * @returns Buffer
  */
-const randomBytes = (_crypto: Crypto, size: number): Buffer => {
-  const bytes = Buffer.allocUnsafe(size)
+const randomBytes = (_crypto: Crypto, size: number): Uint8Array => {
+  const bytes = new Uint8Array(size)
   _crypto.getRandomValues(bytes)
   return bytes
 }
@@ -73,7 +87,7 @@ const randomBytes = (_crypto: Crypto, size: number): Buffer => {
  * @param bits Number of bits to generate
  * @returns Buffer
  */
-export const randomBits = (_crypto: Crypto, bits: number): Buffer => {
+export const randomBits = (_crypto: Crypto, bits: number): Uint8Array => {
   if (bits < 1) throw Error('Invalid random bits count')
   const bytes = Math.ceil(bits / 8)
   return randomBytes(_crypto, bytes)
@@ -89,16 +103,15 @@ const pbkdf2 = async (
   iterations: number,
   keyLength: number,
   hash: HashAlgorithmIdentifier
-): Promise<Buffer> => {
-  const textEncoder = new TextEncoder()
-  const passwordBuffer = textEncoder.encode(password)
+): Promise<ArrayBuffer> => {
+  const passwordBuffer = stringToBuffer(password)
   const importedKey = await _crypto.subtle.importKey('raw', passwordBuffer, 'PBKDF2', false, [
     'deriveBits',
   ])
-  const saltBuffer = textEncoder.encode(salt)
+  const saltBuffer = stringToBuffer(salt)
   const params = { name: 'PBKDF2', hash, salt: saltBuffer, iterations }
   const derivation = await _crypto.subtle.deriveBits(params, importedKey, keyLength * 8)
-  return Buffer.from(derivation)
+  return derivation
 }
 
 /**
@@ -139,7 +152,7 @@ export const generateKey = async (
       const { saltBits = 0 } = options
       if (!saltBits) throw new Error('Missing salt and saltBits options')
       const randomSalt = randomBits(_crypto, saltBits)
-      salt = randomSalt.toString('hex')
+      salt = [...new Uint8Array(randomSalt)].map((x) => x.toString(16).padStart(2, '0')).join('')
     }
 
     const derivedKey = await pbkdf2(
@@ -185,16 +198,15 @@ export const encrypt = async (
   password: Password,
   options: GenerateKeyOptions,
   data: string
-): Promise<{ encrypted: Buffer; key: Key }> => {
+): Promise<{ encrypted: Uint8Array; key: Key }> => {
   const key = await generateKey(_crypto, password, options)
-  const textEncoder = new TextEncoder()
-  const textBuffer = textEncoder.encode(data)
+  const textBuffer = stringToBuffer(data)
   const encrypted = await _crypto.subtle.encrypt(
     { name: algorithms[options.algorithm].name, iv: key.iv },
     key.key,
     textBuffer
   )
-  return { encrypted: Buffer.from(encrypted), key }
+  return { encrypted: new Uint8Array(encrypted), key }
 }
 
 /**
@@ -209,16 +221,15 @@ export const decrypt = async (
   _crypto: Crypto,
   password: Password,
   options: GenerateKeyOptions,
-  data: Buffer | string
+  data: Uint8Array | string
 ): Promise<string> => {
   const key = await generateKey(_crypto, password, options)
   const decrypted = await _crypto.subtle.decrypt(
     { name: algorithms[options.algorithm].name, iv: key.iv },
     key.key,
-    Buffer.isBuffer(data) ? data : Buffer.from(data)
+    typeof data === 'string' ? stringToBuffer(data) : data
   )
-  const textDecoder = new TextDecoder()
-  return textDecoder.decode(decrypted)
+  return bufferToString(new Uint8Array(decrypted))
 }
 
 /**
@@ -236,10 +247,9 @@ export const hmacWithPassword = async (
   data: string
 ): Promise<HMacResult> => {
   const key = await generateKey(_crypto, password, { ...options, hmac: true })
-  const textEncoder = new TextEncoder()
-  const textBuffer = textEncoder.encode(data)
+  const textBuffer = stringToBuffer(data)
   const signed = await _crypto.subtle.sign({ name: 'HMAC' }, key.key, textBuffer)
-  const digest = base64urlEncode(Buffer.from(signed))
+  const digest = base64urlEncode(new Uint8Array(signed))
   return { digest, salt: key.salt }
 }
 
@@ -249,12 +259,11 @@ export const hmacWithPassword = async (
  * @returns An object with keys: id, encryption, integrity
  */
 const normalizePassword = (password: RawPassword): password.Specific => {
-  if (typeof password === 'object' && !Buffer.isBuffer(password)) {
-    if ('secret' in password)
-      return { id: password.id, encryption: password.secret, integrity: password.secret }
-    return { id: password.id, encryption: password.encryption, integrity: password.integrity }
-  }
-  return { encryption: password, integrity: password }
+  if (typeof password === 'string' || password instanceof Uint8Array)
+    return { encryption: password, integrity: password }
+  if ('secret' in password)
+    return { id: password.id, encryption: password.secret, integrity: password.secret }
+  return { id: password.id, encryption: password.encryption, integrity: password.integrity }
 }
 
 /**
@@ -284,7 +293,7 @@ export const seal = async (
 
   const { encrypted, key } = await encrypt(_crypto, pass.encryption, opts.encryption, objectString)
 
-  const encryptedB64 = base64urlEncode(encrypted)
+  const encryptedB64 = base64urlEncode(new Uint8Array(encrypted))
   const iv = base64urlEncode(key.iv)
   const expiration = opts.ttl ? now + opts.ttl : ''
   const macBaseString = `${macPrefix}*${id}*${key.salt}*${iv}*${encryptedB64}*${expiration}`
@@ -354,11 +363,11 @@ export const unseal = async (
     throw new Error('Empty password')
 
   let pass: RawPassword
-  if (typeof password === 'object' && !Buffer.isBuffer(password)) {
-    if (!((passwordId || 'default') in password))
-      throw new Error(`Cannot find password: ${passwordId}`)
-    pass = password[passwordId || 'default']
-  } else pass = password
+
+  if (typeof password === 'string' || password instanceof Uint8Array) pass = password
+  else if (!((passwordId || 'default') in password))
+    throw new Error(`Cannot find password: ${passwordId}`)
+  else pass = password[passwordId || 'default']
 
   pass = normalizePassword(pass)
 
@@ -368,10 +377,10 @@ export const unseal = async (
 
   if (!fixedTimeComparison(mac.digest, hmac)) throw new Error('Bad hmac value')
 
-  const encrypted = Buffer.from(encryptedB64, 'base64')
+  const encrypted = base64urlDecode(encryptedB64)
   const decryptOptions: GenerateKeyOptions = opts.encryption
   decryptOptions.salt = encryptionSalt
-  decryptOptions.iv = Buffer.from(encryptionIv, 'base64')
+  decryptOptions.iv = base64urlDecode(encryptionIv)
 
   const decrypted = await decrypt(_crypto, pass.encryption, decryptOptions, encrypted)
   if (decrypted) return JSON.parse(decrypted) as unknown
