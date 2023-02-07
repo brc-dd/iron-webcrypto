@@ -114,7 +114,6 @@ rules:
   no-duplicate-imports: off
   '@typescript-eslint/no-duplicate-imports': error
   no-extra-parens: off
-  '@typescript-eslint/no-extra-parens': error
   no-invalid-this: off
   '@typescript-eslint/no-invalid-this': error
   no-loop-func: off
