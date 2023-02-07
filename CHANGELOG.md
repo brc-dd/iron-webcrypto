@@ -1,5 +1,12 @@
 
 
+## [0.3.1](https://github.com/brc-dd/iron-webcrypto/compare/0.3.0...0.3.1) (2023-02-07)
+
+
+### Bug Fixes
+
+* group exports to default ([45f96d5](https://github.com/brc-dd/iron-webcrypto/commit/45f96d50901097056d1382740db424aa3d492971))
+
 ## [0.3.0](https://github.com/brc-dd/iron-webcrypto/compare/0.2.7...0.3.0) (2023-02-07)
 
 
