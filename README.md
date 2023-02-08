@@ -77,7 +77,7 @@ vulnerabilities have been reported, but I am no cryptography expert. Quoting
 > the system completely ineffective.
 
 As a request, it would be great if someone with expertise in this field could
-thoroughly review the code we have here.
+thoroughly review the code.
 
 ## Credits
 
