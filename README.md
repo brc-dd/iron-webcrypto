@@ -1,59 +1,95 @@
 # iron-webcrypto (beta) [![jsDocs.io](https://img.shields.io/badge/jsDocs.io-reference-blue?style=flat-square)](https://www.jsdocs.io/package/iron-webcrypto) [![npm](https://img.shields.io/npm/dm/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto)
 
 This module is a replacement for [`@hapi/iron`](https://hapi.dev/module/iron/),
-written using the
-[Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
-that makes it compatible with browser and edge environments.
+written using standard APIs like Web Crypto and Uint8Array, which make this
+compatible with a variety of runtimes like Node.js, Deno, Bun, browsers,
+workers, and edge environments. Refer `@hapi/iron`'s docs on what it does and
+how it works.
 
-> Check out [**vvo/iron-session**](https://github.com/vvo/iron-session) to see
-> this module in use!
+> Check out [**unjs/h3**](https://github.com/unhs/h3) and
+> [**vvo/iron-session**](https://github.com/vvo/iron-session) to see this module
+> in use!
 
 ---
 
 ## Installation
 
-To use this module, run:
+Simply run:
 
 ```sh
 npm add iron-webcrypto
-npm remove @hapi/iron
 ```
 
-and update imports.
+Change the package manager to whatever you like. On Deno and browsers, you can
+use [esm.sh](https://esm.sh/) for importing this:
 
-Then modify function calls to pass a Web Crypto implementation as the first
-param. For example:
+```ts
+import * as Iron from 'https://esm.sh/iron-webcrypto@0.4.0'
+```
 
-```js
+## Usage
+
+Refer `@hapi/iron`'s docs. There are certain differences.
+
+You need to pass a Web Crypto implementation as the first parameter to each
+function. For example:
+
+```ts
 Iron.seal(obj, password, Iron.defaults)
 ```
 
 becomes:
 
-```js
+```ts
 Iron.seal(_crypto, obj, password, Iron.defaults)
 ```
 
-where `_crypto` is your Web Crypto implementation. Generally, this will
-available in your context (for example, `globalThis.crypto` in browsers, edge
-runtimes, Deno[^1], Bun and Node.js v19+; `require('crypto').webcrypto` in
-Node.js v15+). However, you may also need to polyfill this for older Node.js
-versions. We recommend using
-[`@peculiar/webcrypto`](https://www.npmjs.com/package/@peculiar/webcrypto) for
-that.
+where `_crypto` is your Web Crypto implementation. Generally, this will be
+available in your context. For example, `globalThis.crypto` in browsers,
+workers, edge runtimes, Deno, Bun, and Node.js v19+;
+`require('crypto').webcrypto` in Node.js v15+. You can directly use
+[`uncrypto`](https://github.com/unjs/uncrypto) for this too. Also, you might
+need to polyfill this for older Node.js versions. We recommend using
+[`@peculiar/webcrypto`](https://github.com/PeculiarVentures/webcrypto) for that.
 
-[^1]:
-    You can use esm.sh for importing this module in Deno (and browsers).
-    Example:
+There are certain other differences because of the underlying implementation
+using standard APIs instead of Node.js-specific ones like `node:crypto` and
+`node:buffer`. There might also be differences in certain error messages because
+of this.
 
-    ```ts
-    import * as Iron from 'https://esm.sh/iron-webcrypto@0.2.6'
+## Security Considerations
 
-    const obj = { a: 1, b: 2, c: [3, 4, 5], d: { e: 'f' } }
-    const password = 'some_not_random_password_that_is_also_long_enough'
+**Users are responsible for implementing `iron-webcrypto` in a secure manner and
+ensuring the security of their cryptographic keys.**
 
-    const sealed = await Iron.seal(crypto, obj, password, Iron.defaults)
-    const unsealed = await Iron.unseal(crypto, sealed, password, Iron.defaults)
+**I DO NOT guarantee the security of this module.** So far, no security
+vulnerabilities have been reported, but I am no cryptography expert. Quoting
+[MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API):
 
-    console.log(unsealed)
-    ```
+> The Web Crypto API provides a number of low-level cryptographic primitives.
+> It's very easy to misuse them, and the pitfalls involved can be very subtle.
+>
+> Even assuming you use the basic cryptographic functions correctly, secure key
+> management and overall security system design are extremely hard to get right,
+> and are generally the domain of specialist security experts.
+>
+> Errors in security system design and implementation can make the security of
+> the system completely ineffective.
+
+As a request, it would be great if someone with expertise in this field could
+thoroughly review the code.
+
+## Credits
+
+```txt
+@hapi/iron
+    Copyright (c) 2012-2022, Project contributors
+    Copyright (c) 2012-2020, Sideway Inc
+    All rights reserved.
+    https://cdn.jsdelivr.net/npm/@hapi/iron@7.0.0/LICENSE.md
+
+@aws-sdk/util-base64
+    Copyright 2018-2020 Amazon.com, Inc. or its affiliates
+    All Rights Reserved.
+    https://cdn.jsdelivr.net/npm/@aws-sdk/util-base64@3.208.0/LICENSE
+```
