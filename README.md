@@ -3,7 +3,7 @@
 This module is a replacement for [`@hapi/iron`](https://hapi.dev/module/iron/),
 written using standard APIs like Web Crypto and Uint8Array, which make this
 compatible with a variety of runtimes like Node.js, Deno, Bun, browsers,
-workers, and edge environments. Refer `@hapi/iron`'s' docs on what it does and
+workers, and edge environments. Refer `@hapi/iron`'s docs on what it does and
 how it works.
 
 > Check out [**unjs/h3**](https://github.com/unhs/h3) and
