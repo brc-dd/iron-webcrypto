@@ -6,7 +6,7 @@ compatible with a variety of runtimes like Node.js, Deno, Bun, browsers,
 workers, and edge environments. Refer `@hapi/iron`'s docs on what it does and
 how it works.
 
-> Check out [**unjs/h3**](https://github.com/unhs/h3) and
+> Check out [**unjs/h3**](https://github.com/unjs/h3) and
 > [**vvo/iron-session**](https://github.com/vvo/iron-session) to see this module
 > in use!
 
