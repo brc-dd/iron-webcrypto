@@ -36,7 +36,8 @@
     "lint": "lefthook run pre-commit",
     "prerelease": "pnpm i && pnpm lint && pnpm build && pnpm test",
     "release": "pnpm prerelease && release-it",
-    "test": "vitest run"
+    "test": "vitest run tests/vite-node.ts",
+    "test:node": "node --loader tsx --test tests/node.ts"
   },
   "devDependencies": {
     "@aws-sdk/util-base64": "^3.208.0",
@@ -46,6 +47,7 @@
     "@release-it/conventional-changelog": "^5.1.1",
     "@tsconfig/node12": "^1.0.11",
     "@types/node": "^18.13.0",
+    "@types/semver": "^7.3.13",
     "@typescript-eslint/eslint-plugin": "^5.51.0",
     "@typescript-eslint/parser": "^5.51.0",
     "eslint": "^8.33.0",
@@ -63,15 +65,19 @@
     "prettier-plugin-packagejson": "^2.4.2",
     "release-it": "^15.6.0",
     "replace": "^1.2.2",
+    "semver": "^7.3.8",
+    "tsx": "^3.12.3",
     "typescript": "^4.9.5",
     "unbuild": "^1.1.1",
     "vitest": "^0.28.4"
   },
-  "packageManager": "pnpm@7.26.3",
+  "packageManager": "pnpm@7.27.0",
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
   },
   "unbuild": {
-    "failOnWarn": false
+    "rollup": {
+      "inlineDependencies": true
+    }
   }
 }

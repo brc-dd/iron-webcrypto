@@ -1,7 +1,7 @@
 {
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[ignore][properties][shellscript]": { "editor.defaultFormatter": "foxundermoon.shell-format" },
-  "editor.formatOnSave": false,
+  "editor.formatOnSave": true,
   "editor.codeActionsOnSave": ["source.fixAll.format", "source.fixAll.eslint"],
   "eslint.probe": ["typescript"],
   "typescript.tsdk": "node_modules/typescript/lib"
