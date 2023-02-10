@@ -4,5 +4,5 @@
   "editor.formatOnSave": false,
   "editor.codeActionsOnSave": ["source.fixAll.format", "source.fixAll.eslint"],
   "eslint.probe": ["typescript"],
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "files.exclude": { "tests/deno": true }
 }

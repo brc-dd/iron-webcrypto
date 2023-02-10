@@ -18,10 +18,11 @@
   "license": "MIT",
   "author": "Divyansh Singh <brc-dd@hotmail.com> (https://github.com/brc-dd)",
   "sideEffects": false,
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
+      "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     }
   },
@@ -32,7 +33,7 @@
     "dist/*"
   ],
   "scripts": {
-    "build": "unbuild",
+    "build": "tsup",
     "lint": "lefthook run pre-commit",
     "prerelease": "pnpm i && pnpm build && pnpm lint && pnpm test",
     "release": "pnpm prerelease && release-it",
@@ -56,28 +57,22 @@
     "eslint-config-prettier": "^8.6.0",
     "eslint-import-resolver-node": "^0.3.7",
     "eslint-import-resolver-typescript": "^3.5.3",
-    "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-security": "^1.7.1",
     "lefthook": "^1.2.8",
-    "prettier": "^2.8.3",
+    "prettier": "^2.8.4",
     "prettier-plugin-packagejson": "^2.4.2",
     "release-it": "^15.6.0",
     "replace": "^1.2.2",
     "semver": "^7.3.8",
+    "tsup": "^6.6.0",
     "tsx": "^3.12.3",
     "typescript": "^4.9.5",
-    "unbuild": "^1.1.1",
     "vitest": "^0.28.4"
   },
   "packageManager": "pnpm@7.27.0",
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
-  },
-  "unbuild": {
-    "rollup": {
-      "inlineDependencies": true
-    }
   }
 }

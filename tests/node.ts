@@ -10,10 +10,6 @@ tests({
   crypto: satisfies(process.version, '>=19.0.0') ? crypto : webcrypto,
   describe,
   it,
-  deepEqual(actual, expected) {
-    assert.deepEqual(actual, expected)
-  },
-  async rejects(fn, re) {
-    return assert.rejects(fn, re)
-  },
+  deepEqual: assert.deepEqual,
+  rejects: assert.rejects,
 })

@@ -2,7 +2,6 @@ root: true
 env:
   node: true
 extends:
-  - plugin:eslint-comments/recommended
   - plugin:import/recommended
   - plugin:import/typescript
   - plugin:security/recommended
@@ -30,7 +29,6 @@ settings:
       alwaysTryTypes: true
       project: .
 rules:
-  eslint-comments/no-unused-disable: error
   security/detect-object-injection: off # ts handles this
   import/prefer-default-export: off
   import/no-extraneous-dependencies: off
