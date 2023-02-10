@@ -34,7 +34,7 @@
   "scripts": {
     "build": "unbuild",
     "lint": "lefthook run pre-commit",
-    "prerelease": "pnpm i && pnpm lint && pnpm build && pnpm test",
+    "prerelease": "pnpm i && pnpm build && pnpm lint && pnpm test",
     "release": "pnpm prerelease && release-it",
     "test": "vitest run tests/vite-node.ts",
     "test:node": "node --loader tsx --test tests/node.ts"
