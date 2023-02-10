@@ -24,3 +24,7 @@ jobs:
       - run: pnpm prerelease && [ -z "$(git status --porcelain)" ]
       - if: matrix.node-version >= 18
         run: pnpm test:node
+      - if: matrix.node-version == 18
+        uses: denoland/setup-deno@v1
+      - if: matrix.node-version == 18
+        run: pnpm test:deno
