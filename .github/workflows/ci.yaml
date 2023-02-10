@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [14, 16, 18, '*']
+        node-version: [14, 16, 18, 19]
     steps:
       - uses: actions/checkout@v3
       - uses: pnpm/action-setup@v2
@@ -22,5 +22,5 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
       - run: pnpm prerelease && [ -z "$(git status --porcelain)" ]
-      - if: matrix.node-version == '18' || matrix.node-version == '*'
+      - if: matrix.node-version >= 18
         run: pnpm test:node
