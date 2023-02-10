@@ -27,7 +27,7 @@
     }
   },
   "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist/*"
@@ -35,7 +35,7 @@
   "scripts": {
     "build": "tsup",
     "lint": "lefthook run pre-commit",
-    "prerelease": "pnpm i && pnpm build && pnpm lint && pnpm test",
+    "prerelease": "pnpm i && pnpm build && pnpm lint && pnpm test && publint",
     "release": "pnpm prerelease && release-it",
     "test": "vitest run tests/vite-node.ts",
     "test:deno": "deno test tests/deno/index.ts --parallel --no-check",
@@ -64,6 +64,7 @@
     "lefthook": "^1.2.8",
     "prettier": "^2.8.4",
     "prettier-plugin-packagejson": "^2.4.2",
+    "publint": "^0.1.9",
     "release-it": "^15.6.0",
     "replace": "^1.2.2",
     "semver": "^7.3.8",
