@@ -12,7 +12,7 @@ tests({
     ? globalThis.crypto
     : satisfies(process.version, '>=16.0.0')
     ? crypto.webcrypto
-    : Crypto,
+    : new Crypto(),
   describe,
   it,
   deepEqual(actual, expected) {
