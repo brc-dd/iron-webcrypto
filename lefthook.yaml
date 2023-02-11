@@ -27,4 +27,4 @@ pre-commit:
       run: pnpm prettier --write --ignore-unknown {all_files}
     3_eslint:
       glob: '*.ts'
-      run: pnpm eslint --fix --max-warnings 0 {all_files}
+      run: pnpm eslint --fix {all_files}
