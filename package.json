@@ -38,9 +38,9 @@
     "prerelease": "pnpm i && pnpm build && pnpm lint && pnpm test:vite && publint",
     "release": "pnpm prerelease && release-it",
     "test:bun": "bun --cwd=tests/bun wiptest",
-    "test:deno": "deno test tests/deno/index.ts --parallel --no-check",
-    "test:node": "node --loader tsx --test tests/node.ts",
-    "test:vite": "vitest run tests/vite-node.ts"
+    "test:deno": "deno test tests/deno/index.test.ts --parallel --no-check",
+    "test:node": "node --loader tsx --test tests/node/index.test.ts",
+    "test:vite": "vitest run tests/vite-node"
   },
   "devDependencies": {
     "@aws-sdk/util-base64": "^3.208.0",
@@ -53,6 +53,7 @@
     "@types/semver": "^7.3.13",
     "@typescript-eslint/eslint-plugin": "^5.51.0",
     "@typescript-eslint/parser": "^5.51.0",
+    "bun-types": "^0.5.6",
     "eslint": "^8.34.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-airbnb-typescript": "^17.0.0",

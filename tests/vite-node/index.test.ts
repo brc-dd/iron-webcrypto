@@ -3,7 +3,7 @@ import { Crypto } from '@peculiar/webcrypto'
 import crypto from 'node:crypto'
 import { satisfies } from 'semver'
 import { describe, expect, it } from 'vitest'
-import { tests } from '.'
+import { tests } from '../index.js'
 
 tests({
   // @ts-expect-error

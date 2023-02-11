@@ -1,7 +1,6 @@
 {
   "folders": [
     { "name": "tests/deno", "path": "tests/deno" },
-    { "name": "tests/bun", "path": "tests/bun" },
     { "name": "root", "path": "." }
   ]
 }
