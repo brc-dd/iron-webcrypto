@@ -13,6 +13,7 @@ tests({
     : satisfies(process.version, '>=16.0.0')
     ? crypto.webcrypto
     : new Crypto(),
+  createHmac: crypto.createHmac,
   describe,
   it,
   deepEqual(actual, expected) {

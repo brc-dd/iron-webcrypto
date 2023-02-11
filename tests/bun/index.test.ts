@@ -1,5 +1,6 @@
 import assert, { AssertionError } from 'assert'
 import { describe, it } from 'bun:test'
+import { createHmac } from 'crypto'
 import { tests } from '../index.js'
 
 async function rejects(fn: Promise<unknown>, re: RegExp): Promise<void> {
@@ -34,4 +35,4 @@ async function rejects(fn: Promise<unknown>, re: RegExp): Promise<void> {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-tests({ crypto, describe, it, deepEqual: assert.deepStrictEqual, rejects })
+tests({ crypto, createHmac, describe, it, deepEqual: assert.deepStrictEqual, rejects })

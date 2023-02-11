@@ -1,4 +1,5 @@
 import { stripColor } from 'https://deno.land/std@0.177.0/fmt/colors.ts'
+import { createHmac } from 'https://deno.land/std@0.177.0/node/crypto.ts'
 import { assertEquals, AssertionError } from 'https://deno.land/std@0.177.0/testing/asserts.ts'
 import { describe, it } from 'https://deno.land/std@0.177.0/testing/bdd.ts'
 import { tests } from '../index.ts'
@@ -37,6 +38,7 @@ async function rejects(fn: Promise<unknown>, re: RegExp): Promise<void> {
 
 tests({
   crypto,
+  createHmac,
   describe,
   // @ts-ignore !
   it,
