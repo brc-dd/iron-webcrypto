@@ -38,6 +38,7 @@
     "prerelease": "pnpm i && pnpm build && pnpm lint && pnpm test && publint",
     "release": "pnpm prerelease && release-it",
     "test": "vitest run tests/vite-node.ts",
+    "test:bun": "bun --cwd=tests/bun wiptest",
     "test:deno": "deno test tests/deno/index.ts --parallel --no-check",
     "test:node": "node --loader tsx --test tests/node.ts"
   },
