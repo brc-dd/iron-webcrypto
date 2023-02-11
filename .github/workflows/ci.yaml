@@ -9,11 +9,39 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  test-all:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: pnpm
+      - uses: denoland/setup-deno@v1
+      - uses: oven-sh/setup-bun@v0.1.8
+        with:
+          bun-version: latest
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: pnpm prerelease && [ -z "$(git status --porcelain)" ]
+      - run: pnpm test:node && pnpm test:deno && pnpm test:bun
+
+  test-node-latest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: latest
+          cache: pnpm
+      - run: pnpm i && pnpm build && pnpm test:node
+
+  test-node:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [14, 16, 18, 19]
+        node-version: [14, 16]
     steps:
       - uses: actions/checkout@v3
       - uses: pnpm/action-setup@v2
@@ -21,17 +49,4 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
-      - run: pnpm prerelease && [ -z "$(git status --porcelain)" ]
-      - if: matrix.node-version >= 18
-        run: pnpm test:node
-      - if: matrix.node-version == 18
-        uses: denoland/setup-deno@v1
-      - if: matrix.node-version == 18
-        run: pnpm test:deno
-      - if: matrix.node-version == 18
-        uses: oven-sh/setup-bun@v0.1.8
-        with:
-          bun-version: latest
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - if: matrix.node-version == 18
-        run: pnpm test:bun
+      - run: pnpm i && pnpm build && pnpm test:vite

@@ -35,12 +35,12 @@
   "scripts": {
     "build": "tsup",
     "lint": "lefthook run pre-commit",
-    "prerelease": "pnpm i && pnpm build && pnpm lint && pnpm test && publint",
+    "prerelease": "pnpm i && pnpm build && pnpm lint && pnpm test:vite && publint",
     "release": "pnpm prerelease && release-it",
-    "test": "vitest run tests/vite-node.ts",
     "test:bun": "bun --cwd=tests/bun wiptest",
     "test:deno": "deno test tests/deno/index.ts --parallel --no-check",
-    "test:node": "node --loader tsx --test tests/node.ts"
+    "test:node": "node --loader tsx --test tests/node.ts",
+    "test:vite": "vitest run tests/vite-node.ts"
   },
   "devDependencies": {
     "@aws-sdk/util-base64": "^3.208.0",
