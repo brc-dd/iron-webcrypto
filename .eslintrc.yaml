@@ -13,12 +13,12 @@ extends:
   - plugin:prettier/recommended
 ignorePatterns:
   - dist
+  - tests/deno
 parser: '@typescript-eslint/parser'
 parserOptions:
   ecmaVersion: 2019
   project:
     - tsconfig.json
-    - tsconfig.internals.json
   sourceType: module
 plugins:
   - '@typescript-eslint'

@@ -1,13 +1,21 @@
 {
-  "extends": "@tsconfig/node12/tsconfig.json",
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable"],
-    "skipLibCheck": false,
-    "allowJs": true,
+    "allowJs": false,
+    "allowSyntheticDefaultImports": true,
     "baseUrl": "src",
     "declaration": true,
+    "downlevelIteration": true,
     "exactOptionalPropertyTypes": true,
-    "outDir": "dist"
+    "forceConsistentCasingInFileNames": true,
+    "jsx": "preserve",
+    "lib": ["esnext"],
+    "module": "esnext",
+    "moduleResolution": "nodenext",
+    "outDir": "dist",
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "esnext",
+    "types": ["bun-types"]
   },
-  "exclude": ["src/**.spec.ts", "dist"]
+  "exclude": ["dist", "tests/deno"]
 }
