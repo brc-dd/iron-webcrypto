@@ -10,6 +10,7 @@ on:
 
 jobs:
   test-all:
+    name: test (node-18, deno, bun)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -27,13 +28,14 @@ jobs:
       - run: pnpm test:node && pnpm test:deno && pnpm test:bun
 
   test-node-latest:
+    name: test (node-19)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: pnpm/action-setup@v2
       - uses: actions/setup-node@v3
         with:
-          node-version: latest
+          node-version: 19
           cache: pnpm
       - run: pnpm i && pnpm build && pnpm test:node
 
