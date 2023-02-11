@@ -94,10 +94,10 @@ export const tests = ({
       const cyclic: Array<unknown> = []
       cyclic[0] = cyclic
       const key = Iron.randomBits(crypto, 128)
-      await rejects(
-        Iron.seal(crypto, cyclic, key, Iron.defaults),
-        'Converting circular structure to JSON'
-      )
+      await rejects(Iron.seal(crypto, cyclic, key, Iron.defaults), [
+        'Converting circular structure to JSON',
+        'JSON.stringify cannot serialize cyclic structures.',
+      ])
     })
 
     it('turns object into a ticket than parses the ticket successfully (password object)', async () => {
@@ -175,7 +175,10 @@ export const tests = ({
           iterations: 2,
           minPasswordlength: 32,
         }
-        await rejects(Iron.generateKey(crypto, password, options), 'Invalid typed array length')
+        await rejects(Iron.generateKey(crypto, password, options), [
+          'Invalid typed array length',
+          'length too large',
+        ])
       })
     })
 
@@ -312,6 +315,7 @@ export const tests = ({
         await rejects(Iron.unseal(crypto, ticket, password, Iron.defaults), [
           "Expected property name or '}' in JSON at position 1",
           'Unexpected token a in JSON at position 1',
+          "JSON Parse error: Expected '}'",
         ])
       })
 
