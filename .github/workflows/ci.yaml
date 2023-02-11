@@ -29,7 +29,7 @@ jobs:
       - if: matrix.node-version == 18
         run: pnpm test:deno
       - if: matrix.node-version == 18
-        uses: oven-sh/setup-bun@v0.1
+        uses: oven-sh/setup-bun@v0.1.8
         with:
           bun-version: latest
           github-token: ${{ secrets.GITHUB_TOKEN }}
