@@ -1,3 +1,4 @@
+/// <reference types="bun-types" />
 import assert, { AssertionError } from 'assert'
 import { describe, it } from 'bun:test'
 import { createHmac } from 'crypto'
