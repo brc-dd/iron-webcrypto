@@ -9,8 +9,23 @@ on:
   workflow_dispatch:
 
 jobs:
+  test-node:
+    strategy:
+      matrix:
+        node-version: [14, 16, 18, 19]
+    name: test (node-${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
+      - run: pnpm build && pnpm test:node
+
   test-all:
-    name: test (node-active, deno, bun)
+    name: test (deno, bun)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -24,32 +39,5 @@ jobs:
         with:
           bun-version: latest
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: pnpm prerelease && [ -z "$(git status --porcelain)" ]
-      - run: pnpm test:node && pnpm test:deno && pnpm test:bun
-
-  test-node-current:
-    name: test (node-current)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 19
-          cache: pnpm
-      - run: pnpm i && pnpm build && pnpm test:node
-
-  test-node-maintenance:
-    strategy:
-      matrix:
-        node-version: [14, 16]
-    name: test (node-${{ matrix.node-version }})
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2
-      - uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: pnpm
-      - run: pnpm i && pnpm build && pnpm test:vite
+      - run: pnpm lint && [ -z "$(git status --porcelain)" ]
+      - run: pnpm test:deno && pnpm test:bun
