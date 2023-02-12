@@ -8,14 +8,13 @@
     "exactOptionalPropertyTypes": true,
     "forceConsistentCasingInFileNames": true,
     "jsx": "preserve",
-    "lib": ["esnext"],
+    "lib": ["esnext", "dom"],
     "module": "esnext",
     "moduleResolution": "nodenext",
     "outDir": "dist",
     "skipLibCheck": true,
     "strict": true,
-    "target": "esnext",
-    "types": ["bun-types"]
+    "target": "esnext"
   },
   "exclude": ["dist", "tests/deno"]
 }
