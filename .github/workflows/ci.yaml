@@ -35,7 +35,7 @@ jobs:
           node-version: 18
           cache: pnpm
       - uses: denoland/setup-deno@v1
-      - uses: oven-sh/setup-bun@v0.1.8
+      - uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
           github-token: ${{ secrets.GITHUB_TOKEN }}
