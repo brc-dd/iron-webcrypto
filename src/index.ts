@@ -363,7 +363,7 @@ export const unseal = async (
     throw new Error('Empty password')
 
   let pass: RawPassword
-  passwordId ||= 'default'
+  passwordId = passwordId || 'default'
 
   if (typeof password === 'string' || password instanceof Uint8Array) pass = password
   else if (!(passwordId in password)) throw new Error(`Cannot find password: ${passwordId}`)
