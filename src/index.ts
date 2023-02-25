@@ -341,14 +341,14 @@ export const unseal = async (
   const parts = sealed.split('*')
   if (parts.length !== 8) throw new Error('Incorrect number of sealed components')
 
-  const prefix = parts[0]
-  const passwordId = parts[1]
-  const encryptionSalt = parts[2]
-  const encryptionIv = parts[3]
-  const encryptedB64 = parts[4]
-  const expiration = parts[5]
-  const hmacSalt = parts[6]
-  const hmac = parts[7]
+  const prefix = parts[0]!
+  let passwordId = parts[1]!
+  const encryptionSalt = parts[2]!
+  const encryptionIv = parts[3]!
+  const encryptedB64 = parts[4]!
+  const expiration = parts[5]!
+  const hmacSalt = parts[6]!
+  const hmac = parts[7]!
   const macBaseString = `${prefix}*${passwordId}*${encryptionSalt}*${encryptionIv}*${encryptedB64}*${expiration}`
 
   if (macPrefix !== prefix) throw new Error('Wrong mac prefix')
@@ -363,11 +363,11 @@ export const unseal = async (
     throw new Error('Empty password')
 
   let pass: RawPassword
+  passwordId = passwordId || 'default'
 
   if (typeof password === 'string' || password instanceof Uint8Array) pass = password
-  else if (!((passwordId || 'default') in password))
-    throw new Error(`Cannot find password: ${passwordId}`)
-  else pass = password[passwordId || 'default']
+  else if (!(passwordId in password)) throw new Error(`Cannot find password: ${passwordId}`)
+  else pass = password[passwordId]!
 
   pass = normalizePassword(pass)
 
