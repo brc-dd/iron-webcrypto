@@ -1,5 +1,12 @@
 
 
+## [0.6.0](https://github.com/brc-dd/iron-webcrypto/compare/0.5.0...0.6.0) (2023-03-14)
+
+
+### Bug Fixes
+
+* **types:** emit .d.cts files and fix export map ([d1cb1e6](https://github.com/brc-dd/iron-webcrypto/commit/d1cb1e64da7444d9f87d06ce3af9fd5bd8609ea0))
+
 ## [0.5.0](https://github.com/brc-dd/iron-webcrypto/compare/0.4.0...0.5.0) (2023-02-11)
 
 ## [0.4.0](https://github.com/brc-dd/iron-webcrypto/compare/0.3.1...0.4.0) (2023-02-07)
