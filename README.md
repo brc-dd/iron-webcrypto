@@ -60,10 +60,9 @@ of this.
 ## Security Considerations
 
 **Users are responsible for implementing `iron-webcrypto` in a secure manner and
-ensuring the security of their cryptographic keys.**
-
-**I DO NOT guarantee the security of this module.** So far, no security
-vulnerabilities have been reported, but I am no cryptography expert. Quoting
+ensuring the security of their cryptographic keys. I DO NOT guarantee the
+security of this module.** So far, no security vulnerabilities have been
+reported, but I am no cryptography expert. Quoting
 [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API):
 
 > The Web Crypto API provides a number of low-level cryptographic primitives.
