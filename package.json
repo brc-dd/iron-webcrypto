@@ -34,7 +34,7 @@
     "dist/*"
   ],
   "scripts": {
-    "build": "pnpm i && tsup",
+    "build": "pnpm i && tsup && cp dist/index.d.ts dist/index.d.cts",
     "lint": "pnpm build && pnpm lint:only",
     "lint:only": "lefthook run pre-commit && publint",
     "prerelease": "pnpm lint && pnpm test:node",
