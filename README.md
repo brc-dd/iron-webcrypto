@@ -85,7 +85,7 @@ thoroughly review the code.
     Copyright (c) 2012-2022, Project contributors
     Copyright (c) 2012-2020, Sideway Inc
     All rights reserved.
-    https://cdn.jsdelivr.net/npm/@hapi/iron@7.0.0/LICENSE.md
+    https://cdn.jsdelivr.net/npm/@hapi/iron@7.0.1/LICENSE.md
 
 @aws-sdk/util-base64
     Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
