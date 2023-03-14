@@ -3,7 +3,7 @@ import * as Iron from '../dist/index.js'
 
 interface TestContext {
   crypto: Crypto
-  createHmac: (
+  createHmac?: (
     hmac: string,
     key: Uint8Array
   ) => { update: (data: string) => { digest: () => Uint8Array } }
@@ -207,14 +207,15 @@ export const tests = ({
         await rejects(Iron.hmacWithPassword(crypto, null, null, 'data'), 'Empty password')
       })
 
-      it('produces the same mac when used with buffer password', async () => {
-        const data = 'Not so random'
-        const key = Iron.randomBits(crypto, 256)
-        const hmac = createHmac(Iron.defaults.integrity.algorithm, key).update(data)
-        const digest = Iron.base64urlEncode(hmac.digest())
-        const mac = await Iron.hmacWithPassword(crypto, key, Iron.defaults.integrity, data)
-        deepEqual(mac.digest, digest)
-      })
+      if (createHmac)
+        it('produces the same mac when used with buffer password', async () => {
+          const data = 'Not so random'
+          const key = Iron.randomBits(crypto, 256)
+          const hmac = createHmac(Iron.defaults.integrity.algorithm, key).update(data)
+          const digest = Iron.base64urlEncode(hmac.digest())
+          const mac = await Iron.hmacWithPassword(crypto, key, Iron.defaults.integrity, data)
+          deepEqual(mac.digest, digest)
+        })
     })
 
     describe('seal()', () => {

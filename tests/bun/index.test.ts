@@ -15,24 +15,21 @@ async function rejects(fn: Promise<unknown>, re: RegExp): Promise<void> {
       await possiblePromise
     }
   } catch (error) {
-    if (!isPromiseReturned) {
+    if (!isPromiseReturned)
       throw new AssertionError({
         message: `Function throws when expected to reject${msgToAppendToError}`,
       })
-    }
-    if (!(error instanceof Error)) {
+    if (!(error instanceof Error))
       throw new AssertionError({ message: 'A non-Error object was rejected.' })
-    }
-    if (!re.test(error.message)) {
+    if (!re.test(error.message))
       throw new AssertionError({
         message: `Expected error message to include "${re.toString()}", but got "${error.message}"`,
       })
-    }
     doesThrow = true
   }
-  if (!doesThrow) {
+
+  if (!doesThrow)
     throw new AssertionError({ message: `Expected function to reject${msgToAppendToError}` })
-  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

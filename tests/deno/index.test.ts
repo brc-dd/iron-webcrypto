@@ -1,7 +1,6 @@
-import { stripColor } from 'https://deno.land/std@0.177.0/fmt/colors.ts'
-import { createHmac } from 'https://deno.land/std@0.177.0/node/crypto.ts'
-import { assertEquals, AssertionError } from 'https://deno.land/std@0.177.0/testing/asserts.ts'
-import { describe, it } from 'https://deno.land/std@0.177.0/testing/bdd.ts'
+import { stripColor } from 'https://deno.land/std@0.179.0/fmt/colors.ts'
+import { assertEquals, AssertionError } from 'https://deno.land/std@0.179.0/testing/asserts.ts'
+import { describe, it } from 'https://deno.land/std@0.179.0/testing/bdd.ts'
 import { tests } from '../index.ts'
 
 async function rejects(fn: Promise<unknown>, re: RegExp): Promise<void> {
@@ -19,29 +18,18 @@ async function rejects(fn: Promise<unknown>, re: RegExp): Promise<void> {
       await possiblePromise
     }
   } catch (error) {
-    if (!isPromiseReturned) {
+    if (!isPromiseReturned)
       throw new AssertionError(`Function throws when expected to reject${msgToAppendToError}`)
-    }
-    if (error instanceof Error === false) {
+    if (error instanceof Error === false)
       throw new AssertionError('A non-Error object was rejected.')
-    }
-    if (!re.test(stripColor(error.message))) {
-      const msg = `Expected error message to include "${re}", but got "${error.message}"`
-      throw new AssertionError(msg)
-    }
+    if (!re.test(stripColor(error.message)))
+      throw new AssertionError(
+        `Expected error message to include "${re}", but got "${error.message}"`
+      )
     doesThrow = true
   }
-  if (!doesThrow) {
-    throw new AssertionError(`Expected function to reject${msgToAppendToError}`)
-  }
+
+  if (!doesThrow) throw new AssertionError(`Expected function to reject${msgToAppendToError}`)
 }
 
-tests({
-  crypto,
-  createHmac,
-  describe,
-  // @ts-ignore !
-  it,
-  deepEqual: assertEquals,
-  rejects,
-})
+tests({ crypto, describe, it, deepEqual: assertEquals, rejects })
