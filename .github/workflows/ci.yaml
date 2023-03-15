@@ -38,6 +38,5 @@ jobs:
       - uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
-          github-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm lint && [ -z "$(git status --porcelain)" ]
       - run: pnpm test:deno && pnpm test:bun
