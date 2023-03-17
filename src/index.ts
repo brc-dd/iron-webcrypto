@@ -11,7 +11,7 @@ import type {
 } from './types.js'
 
 // re-export all types
-export * from './types.js'
+export type * from './types.js'
 
 export const stringToBuffer = (value: string): Uint8Array => {
   return new TextEncoder().encode(value)
@@ -131,8 +131,7 @@ export const generateKey = async (
   /* eslint-disable @typescript-eslint/no-unnecessary-condition */
   if (password == null || !password.length) throw new Error('Empty password')
   if (options == null || typeof options !== 'object') throw new Error('Bad options')
-  if (!(options.algorithm in algorithms))
-    throw new Error(`Unknown algorithm: ${options.algorithm}`) /* eslint-enable */
+  if (!(options.algorithm in algorithms)) throw new Error(`Unknown algorithm: ${options.algorithm}`)
 
   const algorithm = algorithms[options.algorithm]
   const result: Partial<Key> = {}
