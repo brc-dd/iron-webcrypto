@@ -32,5 +32,4 @@ async function rejects(fn: Promise<unknown>, re: RegExp): Promise<void> {
     throw new AssertionError({ message: `Expected function to reject${msgToAppendToError}` })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 tests({ crypto, createHmac, describe, it, deepEqual: assert.deepStrictEqual, rejects })

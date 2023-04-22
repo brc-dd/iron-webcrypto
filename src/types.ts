@@ -88,6 +88,7 @@ export interface HMacResult {
   salt: string
 }
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export declare namespace password {
   /**
    * Secret object with optional id.

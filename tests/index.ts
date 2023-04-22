@@ -21,10 +21,7 @@ export const tests = ({
   deepEqual,
   rejects: origRejects,
 }: TestContext): void => {
-  const rejects = async (
-    fn: Promise<unknown>,
-    msgIncludes: Array<string> | string
-  ): Promise<void> => {
+  const rejects = async (fn: Promise<unknown>, msgIncludes: string[] | string): Promise<void> => {
     // eslint-disable-next-line security/detect-non-literal-regexp
     const re = new RegExp(
       (typeof msgIncludes === 'string' ? [msgIncludes] : msgIncludes)
@@ -96,7 +93,7 @@ export const tests = ({
     })
 
     it('fails to turn object into a ticket (failed to stringify object)', async () => {
-      const cyclic: Array<unknown> = []
+      const cyclic: unknown[] = []
       cyclic[0] = cyclic
       const key = Iron.randomBits(crypto, 128)
       await rejects(Iron.seal(crypto, cyclic, key, Iron.defaults), [

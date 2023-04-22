@@ -12,7 +12,7 @@ jobs:
   test-node:
     strategy:
       matrix:
-        node-version: [14, 16, 18, 19]
+        node-version: [16, 18, 20]
     name: test (node-${{ matrix.node-version }})
     runs-on: ubuntu-latest
     steps:
@@ -32,7 +32,7 @@ jobs:
       - uses: pnpm/action-setup@v2
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
           cache: pnpm
       - uses: denoland/setup-deno@v1
       - uses: oven-sh/setup-bun@v1

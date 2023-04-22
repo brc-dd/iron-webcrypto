@@ -126,10 +126,9 @@ export const generateKey = async (
   password: Password,
   options: GenerateKeyOptions
 ): Promise<Key> => {
-  //
-
-  /* eslint-disable @typescript-eslint/no-unnecessary-condition */
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (password == null || !password.length) throw new Error('Empty password')
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (options == null || typeof options !== 'object') throw new Error('Bad options')
   if (!(options.algorithm in algorithms)) throw new Error(`Unknown algorithm: ${options.algorithm}`)
 
@@ -138,7 +137,7 @@ export const generateKey = async (
 
   const hmac = options.hmac ?? false
   const id = hmac ? { name: 'HMAC', hash: algorithm.name } : { name: algorithm.name }
-  const usage: Array<KeyUsage> = hmac ? ['sign', 'verify'] : ['encrypt', 'decrypt']
+  const usage: KeyUsage[] = hmac ? ['sign', 'verify'] : ['encrypt', 'decrypt']
 
   if (typeof password === 'string') {
     if (password.length < options.minPasswordlength)
@@ -313,6 +312,7 @@ const fixedTimeComparison = (a: string, b: string): boolean => {
   let mismatch = a.length === b.length ? 0 : 1
   // eslint-disable-next-line no-param-reassign
   if (mismatch) b = a
+  // eslint-disable-next-line no-bitwise
   for (let i = 0; i < a.length; i += 1) mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i)
   return mismatch === 0
 }
@@ -340,6 +340,7 @@ export const unseal = async (
   const parts = sealed.split('*')
   if (parts.length !== 8) throw new Error('Incorrect number of sealed components')
 
+  /* eslint-disable @typescript-eslint/no-non-null-assertion */
   const prefix = parts[0]!
   let passwordId = parts[1]!
   const encryptionSalt = parts[2]!
@@ -349,6 +350,7 @@ export const unseal = async (
   const hmacSalt = parts[6]!
   const hmac = parts[7]!
   const macBaseString = `${prefix}*${passwordId}*${encryptionSalt}*${encryptionIv}*${encryptedB64}*${expiration}`
+  /* eslint-enable */
 
   if (macPrefix !== prefix) throw new Error('Wrong mac prefix')
 
@@ -361,11 +363,12 @@ export const unseal = async (
   if (typeof password === 'undefined' || (typeof password === 'string' && password.length === 0))
     throw new Error('Empty password')
 
-  let pass: RawPassword
+  let pass: RawPassword = ''
   passwordId = passwordId || 'default'
 
   if (typeof password === 'string' || password instanceof Uint8Array) pass = password
   else if (!(passwordId in password)) throw new Error(`Cannot find password: ${passwordId}`)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   else pass = password[passwordId]!
 
   pass = normalizePassword(pass)
