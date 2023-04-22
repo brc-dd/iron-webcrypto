@@ -89,5 +89,5 @@ thoroughly review the code.
 
 @aws-sdk/util-base64
     Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-    https://cdn.jsdelivr.net/npm/@aws-sdk/util-base64@3.208.0/LICENSE
+    https://cdn.jsdelivr.net/npm/@aws-sdk/util-base64@3.310.0/LICENSE
 ```
