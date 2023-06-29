@@ -36,7 +36,7 @@
   "scripts": {
     "build": "pnpm i && tsup",
     "lint": "pnpm build && pnpm lint:only",
-    "lint:only": "lefthook run pre-commit && publint",
+    "lint:only": "lefthook run pre-commit && publint && attw --pack",
     "prerelease": "pnpm lint && pnpm test:node",
     "release": "pnpm prerelease && release-it",
     "test:bun": "bun --cwd=tests/bun test",
@@ -44,15 +44,16 @@
     "test:node": "NODE_OPTIONS='--loader tsx' node--test tests/node/index.test.ts"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.4.2",
     "@aws-sdk/util-base64": "^3.310.0",
     "@commitlint/cli": "^17.6.6",
     "@commitlint/config-conventional": "^17.6.6",
     "@release-it/conventional-changelog": "^5.1.1",
-    "@types/node": "^20.3.1",
+    "@types/node": "^20.3.2",
     "@types/semver": "^7.5.0",
-    "@typescript-eslint/eslint-plugin": "^5.60.0",
-    "@typescript-eslint/parser": "^5.60.0",
-    "bun-types": "^0.6.9",
+    "@typescript-eslint/eslint-plugin": "^5.60.1",
+    "@typescript-eslint/parser": "^5.60.1",
+    "bun-types": "^0.6.11",
     "eslint": "^8.43.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-airbnb-typescript": "^17.0.0",
@@ -71,7 +72,7 @@
     "test": "^3.3.0",
     "tsup": "^7.1.0",
     "tsx": "^3.12.7",
-    "typescript": "^5.1.3"
+    "typescript": "^5.1.6"
   },
   "packageManager": "pnpm@8.6.5",
   "publishConfig": {
