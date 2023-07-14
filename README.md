@@ -49,7 +49,7 @@ available in your context. For example, `globalThis.crypto` in browsers,
 workers, edge runtimes, Deno, Bun, and Node.js v19+;
 `require('crypto').webcrypto` in Node.js v15+. You can directly use
 [`uncrypto`](https://github.com/unjs/uncrypto) for this too. Also, you might
-need to polyfill this for older Node.js versions. We recommend using
+need to polyfill this for older Node.js versions. I recommend using
 [`@peculiar/webcrypto`](https://github.com/PeculiarVentures/webcrypto) for that.
 
 There are certain other differences because of the underlying implementation
