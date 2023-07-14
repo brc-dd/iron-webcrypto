@@ -127,7 +127,7 @@ export const generateKey = async (
   options: GenerateKeyOptions
 ): Promise<Key> => {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (password == null || !password.length) throw new Error('Empty password')
+  if (!password?.length) throw new Error('Empty password')
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (options == null || typeof options !== 'object') throw new Error('Bad options')
   if (!(options.algorithm in algorithms)) throw new Error(`Unknown algorithm: ${options.algorithm}`)
