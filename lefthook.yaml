@@ -12,11 +12,6 @@ post-commit:
     status:
       run: git status
 
-post-checkout:
-  commands:
-    install:
-      run: pnpm i
-
 pre-commit:
   piped: true
   commands:
