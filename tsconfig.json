@@ -12,7 +12,7 @@
     "exactOptionalPropertyTypes": true,
     "jsx": "preserve",
     "lib": ["esnext", "dom"],
-    "module": "esnext",
+    "module": "nodenext",
     "moduleResolution": "nodenext",
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
@@ -25,7 +25,10 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "esnext",
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "paths": {
+      "@smithy/util-base64/dist-es/*": ["../node_modules/@smithy/util-base64/dist-types/*"]
+    }
   },
   "exclude": ["dist", "tests/deno"]
 }

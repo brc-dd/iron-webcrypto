@@ -87,9 +87,9 @@ thoroughly review the code.
     All rights reserved.
     https://cdn.jsdelivr.net/npm/@hapi/iron@7.0.1/LICENSE.md
 
-@aws-sdk/util-base64
+@smithy/util-base64
     Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-    https://cdn.jsdelivr.net/npm/@aws-sdk/util-base64@3.310.0/LICENSE
+    https://cdn.jsdelivr.net/npm/@smithy/util-base64@2.0.0/LICENSE
 ```
 
 ## Sponsors

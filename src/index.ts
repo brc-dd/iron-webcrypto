@@ -1,5 +1,5 @@
-import { fromBase64 } from '@aws-sdk/util-base64/dist-es/fromBase64.browser'
-import { toBase64 } from '@aws-sdk/util-base64/dist-es/toBase64.browser'
+import { fromBase64 } from '@smithy/util-base64/dist-es/fromBase64.browser.js'
+import { toBase64 } from '@smithy/util-base64/dist-es/toBase64.browser.js'
 import type {
   GenerateKeyOptions,
   HMacResult,
