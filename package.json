@@ -67,5 +67,6 @@
     "tsx": "^3.12.7",
     "typescript": "^5.2.2"
   },
-  "packageManager": "pnpm@8.7.0"
+  "packageManager": "pnpm@8.7.0",
+  "runkitExampleFilename": "dist/example.js"
 }

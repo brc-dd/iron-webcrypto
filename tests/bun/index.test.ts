@@ -17,13 +17,13 @@ async function rejects(fn: Promise<unknown>, re: RegExp): Promise<void> {
   } catch (error) {
     if (!isPromiseReturned)
       throw new AssertionError({
-        message: `Function throws when expected to reject${msgToAppendToError}`,
+        message: `Function throws when expected to reject${msgToAppendToError}`
       })
     if (!(error instanceof Error))
       throw new AssertionError({ message: 'A non-Error object was rejected.' })
     if (!re.test(error.message))
       throw new AssertionError({
-        message: `Expected error message to include "${re.toString()}", but got "${error.message}"`,
+        message: `Expected error message to include "${re.toString()}", but got "${error.message}"`
       })
     doesThrow = true
   }

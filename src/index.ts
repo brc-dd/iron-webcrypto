@@ -7,7 +7,7 @@ import type {
   password,
   Password,
   RawPassword,
-  SealOptions,
+  SealOptions
 } from './types.js'
 
 // re-export all types
@@ -41,13 +41,13 @@ export const defaults: SealOptions = {
   integrity: { saltBits: 256, algorithm: 'sha256', iterations: 1, minPasswordlength: 32 },
   ttl: 0,
   timestampSkewSec: 60,
-  localtimeOffsetMsec: 0,
+  localtimeOffsetMsec: 0
 }
 
 export const clone = (options: SealOptions): SealOptions => ({
   ...options,
   encryption: { ...options.encryption },
-  integrity: { ...options.integrity },
+  integrity: { ...options.integrity }
 })
 
 /**
@@ -56,7 +56,7 @@ export const clone = (options: SealOptions): SealOptions => ({
 export const algorithms = {
   'aes-128-ctr': { keyBits: 128, ivBits: 128, name: 'AES-CTR' },
   'aes-256-cbc': { keyBits: 256, ivBits: 128, name: 'AES-CBC' },
-  sha256: { keyBits: 256, name: 'SHA-256' },
+  sha256: { keyBits: 256, name: 'SHA-256' }
 } as const
 
 /**
@@ -106,7 +106,7 @@ const pbkdf2 = async (
 ): Promise<ArrayBuffer> => {
   const passwordBuffer = stringToBuffer(password)
   const importedKey = await _crypto.subtle.importKey('raw', passwordBuffer, 'PBKDF2', false, [
-    'deriveBits',
+    'deriveBits'
   ])
   const saltBuffer = stringToBuffer(salt)
   const params = { name: 'PBKDF2', hash, salt: saltBuffer, iterations }

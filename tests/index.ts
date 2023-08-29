@@ -19,7 +19,7 @@ export const tests = ({
   describe,
   it,
   deepEqual,
-  rejects: origRejects,
+  rejects: origRejects
 }: TestContext): void => {
   const rejects = async (fn: Promise<unknown>, msgIncludes: string[] | string): Promise<void> => {
     // eslint-disable-next-line security/detect-non-literal-regexp
@@ -98,7 +98,7 @@ export const tests = ({
       const key = Iron.randomBits(crypto, 128)
       await rejects(Iron.seal(crypto, cyclic, key, Iron.defaults), [
         'Converting circular structure to JSON',
-        'JSON.stringify cannot serialize cyclic structures.',
+        'JSON.stringify cannot serialize cyclic structures.'
       ])
     })
 
@@ -112,7 +112,7 @@ export const tests = ({
       const key = {
         id: '1',
         encryption: Iron.randomBits(crypto, 256),
-        integrity: Iron.randomBits(crypto, 256),
+        integrity: Iron.randomBits(crypto, 256)
       }
       const sealed = await Iron.seal(crypto, obj, key, Iron.defaults)
       const unsealed = await Iron.unseal(crypto, sealed, { '1': key }, Iron.defaults)
@@ -175,11 +175,11 @@ export const tests = ({
           saltBits: 999999999999999,
           algorithm: 'sha256' as const,
           iterations: 2,
-          minPasswordlength: 32,
+          minPasswordlength: 32
         }
         await rejects(Iron.generateKey(crypto, password, options), [
           'Invalid typed array length',
-          'length too large',
+          'length too large'
         ])
       })
     })
@@ -319,7 +319,7 @@ export const tests = ({
         await rejects(Iron.unseal(crypto, ticket, password, Iron.defaults), [
           "Expected property name or '}' in JSON at position 1",
           'Unexpected token a in JSON at position 1',
-          "JSON Parse error: Expected '}'",
+          "JSON Parse error: Expected '}'"
         ])
       })
 

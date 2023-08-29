@@ -10,5 +10,5 @@ tests({
   describe: test.describe,
   it: test.it,
   deepEqual: assert.deepStrictEqual,
-  rejects: assert.rejects,
+  rejects: assert.rejects
 })
