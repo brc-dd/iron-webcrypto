@@ -20,16 +20,10 @@
   "sideEffects": false,
   "type": "module",
   "exports": {
-    "import": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "require": {
-      "types": "./dist/index.d.cts",
-      "default": "./dist/index.cjs"
-    }
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
   },
-  "main": "./dist/index.cjs",
+  "main": "dist/index.cjs",
   "files": [
     "dist/*"
   ],
@@ -48,10 +42,10 @@
     "@commitlint/config-conventional": "^17.7.0",
     "@release-it/conventional-changelog": "^7.0.0",
     "@smithy/util-base64": "^2.0.0",
-    "@types/node": "^20.5.6",
-    "@types/semver": "^7.5.0",
-    "@typescript-eslint/eslint-plugin": "^6.4.1",
-    "@typescript-eslint/parser": "^6.4.1",
+    "@types/node": "^20.5.7",
+    "@types/semver": "^7.5.1",
+    "@typescript-eslint/eslint-plugin": "^6.5.0",
+    "@typescript-eslint/parser": "^6.5.0",
     "bun-types": "^0.8.1",
     "eslint": "^8.48.0",
     "eslint-config-airbnb-base": "^15.0.0",
@@ -63,7 +57,7 @@
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-security": "^1.7.1",
     "lefthook": "^1.4.9",
-    "prettier": "^3.0.2",
+    "prettier": "^3.0.3",
     "prettier-plugin-packagejson": "^2.4.5",
     "publint": "^0.2.2",
     "release-it": "^16.1.5",
@@ -73,5 +67,5 @@
     "tsx": "^3.12.7",
     "typescript": "^5.2.2"
   },
-  "packageManager": "pnpm@8.6.12"
+  "packageManager": "pnpm@8.7.0"
 }
