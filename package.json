@@ -44,7 +44,6 @@
     "@release-it/conventional-changelog": "^7.0.0",
     "@smithy/util-base64": "^2.0.0",
     "@types/node": "^20.5.7",
-    "@types/semver": "^7.5.1",
     "@typescript-eslint/eslint-plugin": "^6.5.0",
     "@typescript-eslint/parser": "^6.5.0",
     "bun-types": "^0.8.1",
