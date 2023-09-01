@@ -1,5 +1,6 @@
 import { fromBase64 } from '@smithy/util-base64/dist-es/fromBase64.browser.js'
 import { toBase64 } from '@smithy/util-base64/dist-es/toBase64.browser.js'
+import type { _Crypto } from './_crypto.js'
 import type {
   GenerateKeyOptions,
   HMacResult,
@@ -22,7 +23,7 @@ export const bufferToString = (value: Uint8Array): string => {
 }
 
 export const base64urlEncode = (value: Uint8Array | string): string =>
-  toBase64(value instanceof Uint8Array ? value : stringToBuffer(value))
+  toBase64(typeof value === 'string' ? stringToBuffer(value) : value)
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=/g, '')
@@ -75,7 +76,7 @@ export const macPrefix = `Fe26.${macFormatVersion}`
  * @param size Number of bytes to generate
  * @returns Buffer
  */
-const randomBytes = (_crypto: Crypto, size: number): Uint8Array => {
+const randomBytes = (_crypto: _Crypto, size: number): Uint8Array => {
   const bytes = new Uint8Array(size)
   _crypto.getRandomValues(bytes)
   return bytes
@@ -87,7 +88,7 @@ const randomBytes = (_crypto: Crypto, size: number): Uint8Array => {
  * @param bits Number of bits to generate
  * @returns Buffer
  */
-export const randomBits = (_crypto: Crypto, bits: number): Uint8Array => {
+export const randomBits = (_crypto: _Crypto, bits: number): Uint8Array => {
   if (bits < 1) throw Error('Invalid random bits count')
   const bytes = Math.ceil(bits / 8)
   return randomBytes(_crypto, bytes)
@@ -97,7 +98,7 @@ export const randomBits = (_crypto: Crypto, bits: number): Uint8Array => {
  * Provides an asynchronous Password-Based Key Derivation Function 2 (PBKDF2) implementation.
  */
 const pbkdf2 = async (
-  _crypto: Crypto,
+  _crypto: _Crypto,
   password: string,
   salt: string,
   iterations: number,
@@ -122,7 +123,7 @@ const pbkdf2 = async (
  * @returns An object with keys: key, salt, iv
  */
 export const generateKey = async (
-  _crypto: Crypto,
+  _crypto: _Crypto,
   password: Password,
   options: GenerateKeyOptions
 ): Promise<Key> => {
@@ -192,7 +193,7 @@ export const generateKey = async (
  * @returns An object with keys: encrypted, key
  */
 export const encrypt = async (
-  _crypto: Crypto,
+  _crypto: _Crypto,
   password: Password,
   options: GenerateKeyOptions,
   data: string
@@ -216,7 +217,7 @@ export const encrypt = async (
  * @returns Decrypted string
  */
 export const decrypt = async (
-  _crypto: Crypto,
+  _crypto: _Crypto,
   password: Password,
   options: GenerateKeyOptions,
   data: Uint8Array | string
@@ -239,7 +240,7 @@ export const decrypt = async (
  * @returns An object with keys: digest, salt
  */
 export const hmacWithPassword = async (
-  _crypto: Crypto,
+  _crypto: _Crypto,
   password: Password,
   options: GenerateKeyOptions,
   data: string
@@ -273,7 +274,7 @@ const normalizePassword = (password: RawPassword): password.Specific => {
  * @returns Iron sealed string
  */
 export const seal = async (
-  _crypto: Crypto,
+  _crypto: _Crypto,
   object: unknown,
   password: RawPassword,
   options: SealOptions
@@ -326,7 +327,7 @@ const fixedTimeComparison = (a: string, b: string): boolean => {
  * @returns The verified decrypted object (can be null)
  */
 export const unseal = async (
-  _crypto: Crypto,
+  _crypto: _Crypto,
   sealed: string,
   password: Password | password.Hash,
   options: SealOptions
