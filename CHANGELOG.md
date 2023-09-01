@@ -1,5 +1,12 @@
 
 
+## [0.10.1](https://github.com/brc-dd/iron-webcrypto/compare/v0.10.0...v0.10.1) (2023-09-01)
+
+
+### Bug Fixes
+
+* **deno:** types not being pickup ([f0793da](https://github.com/brc-dd/iron-webcrypto/commit/f0793da3bf603594d1b3a98a699e4554ac8f44ca))
+
 ## [0.10.0](https://github.com/brc-dd/iron-webcrypto/compare/v0.9.0...v0.10.0) (2023-09-01)
 
 ## [0.9.0](https://github.com/brc-dd/iron-webcrypto/compare/v0.8.2...v0.9.0) (2023-09-01)
