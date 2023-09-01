@@ -1,4 +1,5 @@
 git:
+  commitArgs: ['--no-verify']
   commitMessage: 'chore: release v${version}'
   tagName: v${version}
 npm:
@@ -8,3 +9,5 @@ plugins:
     preset: conventionalcommits
     infile: CHANGELOG.md
     ignoreRecommendedBump: true
+hooks:
+  'after:bump': pnpm lint && pnpm test:node && git add -f dist
