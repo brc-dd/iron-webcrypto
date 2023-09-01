@@ -1,5 +1,12 @@
 
 
+## [0.9.0](https://github.com/brc-dd/iron-webcrypto/compare/v0.8.2...v0.9.0) (2023-09-01)
+
+
+### Bug Fixes
+
+* **types:** prevent false ts errors with node webcrypto ([a0f1b6e](https://github.com/brc-dd/iron-webcrypto/commit/a0f1b6eac53a7b591c24f4166aaf6874cbb0c203))
+
 ## [0.8.2](https://github.com/brc-dd/iron-webcrypto/compare/v0.8.1...v0.8.2) (2023-08-29)
 
 ## [0.8.1](https://github.com/brc-dd/iron-webcrypto/compare/v0.8.0...v0.8.1) (2023-08-29)

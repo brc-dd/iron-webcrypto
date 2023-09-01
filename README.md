@@ -24,7 +24,7 @@ Change the package manager to whatever you like. On Deno and browsers, you can
 use [esm.sh](https://esm.sh/) for importing this:
 
 ```ts
-import * as Iron from 'https://esm.sh/iron-webcrypto@0.8.2'
+import * as Iron from 'https://esm.sh/iron-webcrypto@0.9.0'
 ```
 
 ## Usage
