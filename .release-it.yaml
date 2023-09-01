@@ -9,4 +9,6 @@ plugins:
     infile: CHANGELOG.md
     ignoreRecommendedBump: true
 hooks:
-  'after:bump': pnpm lint && pnpm test:node && git add -f dist
+  'after:bump':
+    pnpm lint && pnpm test:node && sed -i '' -e 's/${latestVersion}/${version}/g' README.md && git
+    add -f dist README.md
