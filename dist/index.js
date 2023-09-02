@@ -135,7 +135,8 @@ var pbkdf2 = async (_crypto, password, salt, iterations, keyLength, hash) => {
   return derivation;
 };
 var generateKey = async (_crypto, password, options) => {
-  if (!password?.length)
+  var _a;
+  if (!(password == null ? void 0 : password.length))
     throw new Error("Empty password");
   if (options == null || typeof options !== "object")
     throw new Error("Bad options");
@@ -143,7 +144,7 @@ var generateKey = async (_crypto, password, options) => {
     throw new Error(`Unknown algorithm: ${options.algorithm}`);
   const algorithm = algorithms[options.algorithm];
   const result = {};
-  const hmac = options.hmac ?? false;
+  const hmac = (_a = options.hmac) != null ? _a : false;
   const id = hmac ? { name: "HMAC", hash: algorithm.name } : { name: algorithm.name };
   const usage = hmac ? ["sign", "verify"] : ["encrypt", "decrypt"];
   if (typeof password === "string") {

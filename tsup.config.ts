@@ -5,6 +5,7 @@ export default defineConfig({
   clean: true,
   dts: true,
   format: ['esm', 'cjs'],
+  target: 'node10',
   treeshake: true,
   publicDir: true
 })
