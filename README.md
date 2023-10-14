@@ -1,4 +1,4 @@
-# iron-webcrypto (beta) [![jsDocs.io](https://img.shields.io/badge/jsDocs.io-reference-blue?style=flat-square)](https://www.jsdocs.io/package/iron-webcrypto) [![downloads](https://img.shields.io/npm/dm/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto) [![npm](https://img.shields.io/npm/v/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto) [![deno](https://img.shields.io/badge/deno-iron@v0.10.1-orange.svg?style=flat-square)](https://deno.land/x/iron@v0.10.1/mod.ts)
+# iron-webcrypto [![jsDocs.io](https://img.shields.io/badge/jsDocs.io-reference-blue?style=flat-square)](https://www.jsdocs.io/package/iron-webcrypto) [![downloads](https://img.shields.io/npm/dm/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto) [![npm](https://img.shields.io/npm/v/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto) [![deno](https://img.shields.io/badge/deno-iron@v1.0.0-orange.svg?style=flat-square)](https://deno.land/x/iron@v1.0.0/mod.ts)
 
 This module is a replacement for `@hapi/iron`, written using standard APIs like
 Web Crypto and Uint8Array, which make this compatible with a variety of runtimes
@@ -23,13 +23,13 @@ Change the package manager to whatever you like. On Deno and browsers, you can
 use [esm.sh](https://esm.sh/) for importing this:
 
 ```ts
-import * as Iron from 'https://esm.sh/iron-webcrypto@0.10.1'
+import * as Iron from 'https://esm.sh/iron-webcrypto@1.0.0'
 ```
 
 This module is also published on `deno.land/x` as `iron`:
 
 ```ts
-import * as Iron from 'https://deno.land/x/iron@v0.10.1/mod.ts'
+import * as Iron from 'https://deno.land/x/iron@v1.0.0/mod.ts'
 ```
 
 ## Usage
