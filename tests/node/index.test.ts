@@ -1,3 +1,5 @@
+/// <reference lib="dom" />
+
 import assert from 'assert'
 import crypto from 'crypto'
 import test from 'test'

@@ -1,6 +1,6 @@
-import { assertEquals, AssertionError } from 'https://deno.land/std@0.200.0/assert/mod.ts'
-import { stripColor } from 'https://deno.land/std@0.200.0/fmt/colors.ts'
-import { describe, it } from 'https://deno.land/std@0.200.0/testing/bdd.ts'
+import { assertEquals, AssertionError } from 'https://deno.land/std@0.204.0/assert/mod.ts'
+import { stripColor } from 'https://deno.land/std@0.204.0/fmt/colors.ts'
+import { describe, it } from 'https://deno.land/std@0.204.0/testing/bdd.ts'
 import { tests } from '../index.ts'
 
 async function rejects(fn: Promise<unknown>, re: RegExp): Promise<void> {

@@ -1,10 +1,9 @@
 # iron-webcrypto (beta) [![jsDocs.io](https://img.shields.io/badge/jsDocs.io-reference-blue?style=flat-square)](https://www.jsdocs.io/package/iron-webcrypto) [![downloads](https://img.shields.io/npm/dm/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto) [![npm](https://img.shields.io/npm/v/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto) [![deno](https://img.shields.io/badge/deno-iron@v0.10.1-orange.svg?style=flat-square)](https://deno.land/x/iron@v0.10.1/mod.ts)
 
-This module is a replacement for [`@hapi/iron`](https://hapi.dev/module/iron/),
-written using standard APIs like Web Crypto and Uint8Array, which make this
-compatible with a variety of runtimes like Node.js, Deno, Bun, browsers,
-workers, and edge environments. Refer `@hapi/iron`'s docs on what it does and
-how it works.
+This module is a replacement for `@hapi/iron`, written using standard APIs like
+Web Crypto and Uint8Array, which make this compatible with a variety of runtimes
+like Node.js, Deno, Bun, browsers, workers, and edge environments. Refer
+`@hapi/iron`'s docs on what it does and how it works.
 
 > Check out [**unjs/h3**](https://github.com/unjs/h3) and
 > [**vvo/iron-session**](https://github.com/vvo/iron-session) to see this module
@@ -35,7 +34,8 @@ import * as Iron from 'https://deno.land/x/iron@v0.10.1/mod.ts'
 
 ## Usage
 
-Refer `@hapi/iron`'s docs. There are certain differences.
+Refer [`@hapi/iron`'s docs](https://hapi.dev/module/iron/). There are certain
+differences.
 
 You need to pass a Web Crypto implementation as the first parameter to each
 function. For example:

@@ -1,16 +1,10 @@
 {
   "compilerOptions": {
-    "allowJs": false,
-    "allowSyntheticDefaultImports": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
-    "baseUrl": "src",
     "checkJs": true,
-    "declaration": true,
-    "downlevelIteration": true,
     "esModuleInterop": true,
     "exactOptionalPropertyTypes": true,
-    "jsx": "preserve",
     "lib": ["esnext", "dom"],
     "module": "nodenext",
     "moduleResolution": "nodenext",
@@ -22,12 +16,13 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "outDir": "dist",
+    "rootDir": ".",
     "skipLibCheck": true,
     "strict": true,
     "target": "esnext",
     "verbatimModuleSyntax": true,
     "paths": {
-      "@smithy/util-base64/dist-es/*": ["../node_modules/@smithy/util-base64/dist-types/*"]
+      "@smithy/util-base64/dist-es/*": ["./node_modules/@smithy/util-base64/dist-types/*"]
     }
   },
   "exclude": ["dist", "tests/deno"]
