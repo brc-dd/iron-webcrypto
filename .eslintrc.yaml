@@ -35,3 +35,4 @@ rules:
 
   '@typescript-eslint/no-type-alias': off
   '@typescript-eslint/prefer-readonly-parameter-types': off
+  '@typescript-eslint/max-params': off

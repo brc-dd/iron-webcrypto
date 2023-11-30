@@ -1,6 +1,6 @@
 'use strict';
 
-// node_modules/.pnpm/@smithy+util-base64@2.0.0/node_modules/@smithy/util-base64/dist-es/constants.browser.js
+// node_modules/.pnpm/@smithy+util-base64@2.0.1/node_modules/@smithy/util-base64/dist-es/constants.browser.js
 var alphabetByEncoding = {};
 var alphabetByValue = new Array(64);
 for (let i = 0, start = "A".charCodeAt(0), limit = "Z".charCodeAt(0); i + start <= limit; i++) {
@@ -29,7 +29,7 @@ var bitsPerLetter = 6;
 var bitsPerByte = 8;
 var maxLetterValue = 63;
 
-// node_modules/.pnpm/@smithy+util-base64@2.0.0/node_modules/@smithy/util-base64/dist-es/fromBase64.browser.js
+// node_modules/.pnpm/@smithy+util-base64@2.0.1/node_modules/@smithy/util-base64/dist-es/fromBase64.browser.js
 var fromBase64 = (input) => {
   let totalByteLength = input.length / 4 * 3;
   if (input.slice(-2) === "==") {
@@ -64,7 +64,7 @@ var fromBase64 = (input) => {
   return new Uint8Array(out);
 };
 
-// node_modules/.pnpm/@smithy+util-base64@2.0.0/node_modules/@smithy/util-base64/dist-es/toBase64.browser.js
+// node_modules/.pnpm/@smithy+util-base64@2.0.1/node_modules/@smithy/util-base64/dist-es/toBase64.browser.js
 function toBase64(input) {
   let str = "";
   for (let i = 0; i < input.length; i += 3) {

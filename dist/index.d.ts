@@ -207,4 +207,4 @@ declare const seal: (_crypto: _Crypto, object: unknown, password: RawPassword, o
  */
 declare const unseal: (_crypto: _Crypto, sealed: string, password: Password | password.Hash, options: SealOptions) => Promise<unknown>;
 
-export { GenerateKeyOptions, HMacResult, Key, Password, RawPassword, SealOptions, SealOptionsSub, algorithms, base64urlDecode, base64urlEncode, bufferToString, clone, decrypt, defaults, encrypt, generateKey, hmacWithPassword, macFormatVersion, macPrefix, password, randomBits, seal, stringToBuffer, unseal };
+export { type GenerateKeyOptions, type HMacResult, type Key, type Password, type RawPassword, type SealOptions, type SealOptionsSub, algorithms, base64urlDecode, base64urlEncode, bufferToString, clone, decrypt, defaults, encrypt, generateKey, hmacWithPassword, macFormatVersion, macPrefix, password, randomBits, seal, stringToBuffer, unseal };

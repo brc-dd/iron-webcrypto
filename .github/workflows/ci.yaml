@@ -16,7 +16,7 @@ jobs:
   test-node:
     strategy:
       matrix:
-        node-version: [16, 18, 20]
+        node-version: [18, 20, 21]
     name: test (node-${{ matrix.node-version }})
     runs-on: ubuntu-latest
     steps:
