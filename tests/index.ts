@@ -178,9 +178,9 @@ export const tests = ({
           minPasswordlength: 32
         }
         await rejects(Iron.generateKey(crypto, password, options), [
-          'Invalid typed array length',
-          'length too large',
-          'Array buffer allocation failed'
+          'Invalid typed array length', // node
+          'Array buffer allocation failed', // deno
+          'length too large' // bun
         ])
       })
     })
