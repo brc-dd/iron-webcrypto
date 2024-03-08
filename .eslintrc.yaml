@@ -4,7 +4,7 @@ env:
 extends:
   - plugin:import/recommended
   - plugin:import/typescript
-  - plugin:security/recommended
+  - plugin:security/recommended-legacy
   - eslint:recommended
   - plugin:@typescript-eslint/all
   - airbnb-base

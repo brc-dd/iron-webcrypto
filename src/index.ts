@@ -1,32 +1,23 @@
-import { fromBase64 } from '@smithy/util-base64/dist-es/fromBase64.browser.js'
-import { toBase64 } from '@smithy/util-base64/dist-es/toBase64.browser.js'
+import { fromBase64, toBase64 } from '@smithy/util-base64'
+import { fromUtf8 as stringToBuffer, toUtf8 as bufferToString } from '@smithy/util-utf8'
 import type { _Crypto } from './_crypto.js'
 import type {
   GenerateKeyOptions,
   HMacResult,
   Key,
-  password,
   Password,
   RawPassword,
-  SealOptions
+  SealOptions,
+  password
 } from './types.js'
 
 // re-export all types
 export type * from './types.js'
 
-export const stringToBuffer = (value: string): Uint8Array => {
-  return new TextEncoder().encode(value)
-}
-
-export const bufferToString = (value: Uint8Array): string => {
-  return new TextDecoder().decode(value)
-}
+export { stringToBuffer, bufferToString }
 
 export const base64urlEncode = (value: Uint8Array | string): string =>
-  toBase64(typeof value === 'string' ? stringToBuffer(value) : value)
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '')
+  toBase64(value).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
 
 export const base64urlDecode = (value: string): Uint8Array =>
   fromBase64(

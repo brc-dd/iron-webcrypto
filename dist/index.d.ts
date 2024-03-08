@@ -1,3 +1,13 @@
+declare const fromUtf8: (input: string) => Uint8Array;
+
+/**
+ *
+ * This does not convert non-utf8 strings to utf8, it only passes through strings if
+ * a string is received instead of a Uint8Array.
+ *
+ */
+declare const toUtf8: (input: Uint8Array | string) => string;
+
 interface _Crypto {
     readonly subtle: _SubtleCrypto;
     getRandomValues: (array: Uint8Array) => Uint8Array;
@@ -107,8 +117,6 @@ declare namespace password {
 }
 type RawPassword = Password | password.Secret | password.Specific;
 
-declare const stringToBuffer: (value: string) => Uint8Array;
-declare const bufferToString: (value: Uint8Array) => string;
 declare const base64urlEncode: (value: Uint8Array | string) => string;
 declare const base64urlDecode: (value: string) => Uint8Array;
 /**
@@ -207,4 +215,4 @@ declare const seal: (_crypto: _Crypto, object: unknown, password: RawPassword, o
  */
 declare const unseal: (_crypto: _Crypto, sealed: string, password: Password | password.Hash, options: SealOptions) => Promise<unknown>;
 
-export { type GenerateKeyOptions, type HMacResult, type Key, type Password, type RawPassword, type SealOptions, type SealOptionsSub, algorithms, base64urlDecode, base64urlEncode, bufferToString, clone, decrypt, defaults, encrypt, generateKey, hmacWithPassword, macFormatVersion, macPrefix, password, randomBits, seal, stringToBuffer, unseal };
+export { type GenerateKeyOptions, type HMacResult, type Key, type Password, type RawPassword, type SealOptions, type SealOptionsSub, algorithms, base64urlDecode, base64urlEncode, toUtf8 as bufferToString, clone, decrypt, defaults, encrypt, generateKey, hmacWithPassword, macFormatVersion, macPrefix, password, randomBits, seal, fromUtf8 as stringToBuffer, unseal };

@@ -1,6 +1,6 @@
-import { assertEquals, AssertionError } from 'https://deno.land/std@0.208.0/assert/mod.ts'
-import { stripColor } from 'https://deno.land/std@0.208.0/fmt/colors.ts'
-import { describe, it } from 'https://deno.land/std@0.208.0/testing/bdd.ts'
+import { assertEquals, AssertionError } from 'https://deno.land/std@0.219.1/assert/mod.ts'
+import { stripAnsiCode } from 'https://deno.land/std@0.219.1/fmt/colors.ts'
+import { describe, it } from 'https://deno.land/std@0.219.1/testing/bdd.ts'
 import { tests } from '../index.ts'
 
 async function rejects(fn: Promise<unknown>, re: RegExp): Promise<void> {
@@ -22,7 +22,7 @@ async function rejects(fn: Promise<unknown>, re: RegExp): Promise<void> {
       throw new AssertionError(`Function throws when expected to reject${msgToAppendToError}`)
     if (error instanceof Error === false)
       throw new AssertionError('A non-Error object was rejected.')
-    if (!re.test(stripColor(error.message)))
+    if (!re.test(stripAnsiCode(error.message)))
       throw new AssertionError(
         `Expected error message to include "${re}", but got "${error.message}"`
       )

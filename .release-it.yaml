@@ -11,4 +11,4 @@ plugins:
 hooks:
   'after:bump':
     pnpm lint && pnpm test:node && sed -i '' -e 's/${latestVersion}/${version}/g' README.md && git
-    add -f dist README.md
+    add README.md

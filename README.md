@@ -95,13 +95,17 @@ thoroughly review the code.
 
 @smithy/util-base64
     Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-    https://cdn.jsdelivr.net/npm/@smithy/util-base64@2.0.1/LICENSE
+    https://cdn.jsdelivr.net/npm/@smithy/util-base64@2.2.0/LICENSE
+
+@smithy/util-utf8
+    Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+    https://cdn.jsdelivr.net/npm/@smithy/util-utf8@2.2.0/LICENSE
 ```
 
 ## Sponsors
 
 <p align="center">
   <a href="https://cdn.jsdelivr.net/gh/brc-dd/static/sponsors.svg">
-    <img src='https://cdn.jsdelivr.net/gh/brc-dd/static/sponsors.svg'/>
+    <img alt="brc-dd's sponsors" src='https://cdn.jsdelivr.net/gh/brc-dd/static/sponsors.svg'/>
   </a>
 </p>
