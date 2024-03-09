@@ -25,7 +25,7 @@ export const tests = ({
     // eslint-disable-next-line security/detect-non-literal-regexp
     const re = new RegExp(
       (typeof msgIncludes === 'string' ? [msgIncludes] : msgIncludes)
-        .map((s) => s.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&'))
+        .map((s) => s.replace(/[$()*+.?[\\\]^{|}]/g, '\\$&'))
         .join('|')
     )
     return origRejects(fn, re)
@@ -52,10 +52,10 @@ export const tests = ({
     it('unseal and sealed object with expiration and time offset', async () => {
       const options = Iron.clone(Iron.defaults)
       options.ttl = 200
-      options.localtimeOffsetMsec = -100000
+      options.localtimeOffsetMsec = -100_000
       const sealed = await Iron.seal(crypto, obj, password, options)
       const options2 = Iron.clone(Iron.defaults)
-      options2.localtimeOffsetMsec = -100000
+      options2.localtimeOffsetMsec = -100_000
       const unsealed = await Iron.unseal(crypto, sealed, { default: password }, options2)
       deepEqual(unsealed, obj)
     })
@@ -172,7 +172,7 @@ export const tests = ({
 
       it('returns an error when invalid salt bits are provided', async () => {
         const options = {
-          saltBits: 999999999999999,
+          saltBits: 999_999_999_999_999,
           algorithm: 'sha256' as const,
           iterations: 2,
           minPasswordlength: 32

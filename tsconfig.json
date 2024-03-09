@@ -9,6 +9,7 @@
     "jsx": "preserve",
     "lib": ["esnext", "dom"],
     "module": "node16",
+    "moduleDetection": "force",
     "moduleResolution": "node16",
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
@@ -19,7 +20,6 @@
     "outDir": "dist",
     "resolveJsonModule": true,
     "rootDir": ".",
-    "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
     "verbatimModuleSyntax": true

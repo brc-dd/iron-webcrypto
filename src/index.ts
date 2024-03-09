@@ -14,7 +14,7 @@ import type {
 // re-export all types
 export type * from './types.js'
 
-export { stringToBuffer, bufferToString }
+export { fromUtf8 as stringToBuffer, toUtf8 as bufferToString } from '@smithy/util-utf8'
 
 export const base64urlEncode = (value: Uint8Array | string): string =>
   toBase64(value).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
@@ -22,7 +22,7 @@ export const base64urlEncode = (value: Uint8Array | string): string =>
 export const base64urlDecode = (value: string): Uint8Array =>
   fromBase64(
     value.replace(/-/g, '+').replace(/_/g, '/') +
-      Array(((4 - (value.length % 4)) % 4) + 1).join('=')
+      Array.from({ length: ((4 - (value.length % 4)) % 4) + 1 }).join('=')
   )
 
 /**
@@ -80,7 +80,7 @@ const randomBytes = (_crypto: _Crypto, size: number): Uint8Array => {
  * @returns Buffer
  */
 export const randomBits = (_crypto: _Crypto, bits: number): Uint8Array => {
-  if (bits < 1) throw Error('Invalid random bits count')
+  if (bits < 1) throw new Error('Invalid random bits count')
   const bytes = Math.ceil(bits / 8)
   return randomBytes(_crypto, bytes)
 }
@@ -271,24 +271,24 @@ export const seal = async (
   options: SealOptions
 ): Promise<string> => {
   // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-  if (!password) throw Error('Empty password')
+  if (!password) throw new Error('Empty password')
 
   const opts = clone(options)
   const now = Date.now() + (opts.localtimeOffsetMsec || 0)
   const objectString = JSON.stringify(object)
 
   const pass = normalizePassword(password)
-  const { id = '' } = pass
+  const { id = '', encryption, integrity } = pass
   if (id && !/^\w+$/.test(id)) throw new Error('Invalid password id')
 
-  const { encrypted, key } = await encrypt(_crypto, pass.encryption, opts.encryption, objectString)
+  const { encrypted, key } = await encrypt(_crypto, encryption, opts.encryption, objectString)
 
   const encryptedB64 = base64urlEncode(new Uint8Array(encrypted))
   const iv = base64urlEncode(key.iv)
   const expiration = opts.ttl ? now + opts.ttl : ''
   const macBaseString = `${macPrefix}*${id}*${key.salt}*${iv}*${encryptedB64}*${expiration}`
 
-  const mac = await hmacWithPassword(_crypto, pass.integrity, opts.integrity, macBaseString)
+  const mac = await hmacWithPassword(_crypto, integrity, opts.integrity, macBaseString)
   const sealed = `${macBaseString}*${mac.salt}*${mac.digest}`
   return sealed
 }
@@ -304,7 +304,7 @@ const fixedTimeComparison = (a: string, b: string): boolean => {
   let mismatch = a.length === b.length ? 0 : 1
   // eslint-disable-next-line no-param-reassign
   if (mismatch) b = a
-  // eslint-disable-next-line no-bitwise
+  // eslint-disable-next-line no-bitwise, unicorn/prefer-code-point
   for (let i = 0; i < a.length; i += 1) mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i)
   return mismatch === 0
 }
@@ -324,7 +324,7 @@ export const unseal = async (
   options: SealOptions
 ): Promise<unknown> => {
   // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-  if (!password) throw Error('Empty password')
+  if (!password) throw new Error('Empty password')
 
   const opts = clone(options)
   const now = Date.now() + (opts.localtimeOffsetMsec || 0)
@@ -347,21 +347,21 @@ export const unseal = async (
   if (macPrefix !== prefix) throw new Error('Wrong mac prefix')
 
   if (expiration) {
-    if (!/^\d+$/.exec(expiration)) throw new Error('Invalid expiration')
-    const exp = parseInt(expiration, 10)
+    if (!/^\d+$/.test(expiration)) throw new Error('Invalid expiration')
+    const exp = Number.parseInt(expiration, 10)
     if (exp <= now - opts.timestampSkewSec * 1000) throw new Error('Expired seal')
   }
-
-  if (typeof password === 'undefined' || (typeof password === 'string' && password.length === 0))
-    throw new Error('Empty password')
 
   let pass: RawPassword = ''
   passwordId = passwordId || 'default'
 
   if (typeof password === 'string' || password instanceof Uint8Array) pass = password
-  else if (!(passwordId in password)) throw new Error(`Cannot find password: ${passwordId}`)
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  else pass = password[passwordId]!
+  else if (passwordId in password) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    pass = password[passwordId]!
+  } else {
+    throw new Error(`Cannot find password: ${passwordId}`)
+  }
 
   pass = normalizePassword(pass)
 

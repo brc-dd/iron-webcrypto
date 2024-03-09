@@ -1,13 +1,3 @@
-declare const fromUtf8: (input: string) => Uint8Array;
-
-/**
- *
- * This does not convert non-utf8 strings to utf8, it only passes through strings if
- * a string is received instead of a Uint8Array.
- *
- */
-declare const toUtf8: (input: Uint8Array | string) => string;
-
 interface _Crypto {
     readonly subtle: _SubtleCrypto;
     getRandomValues: (array: Uint8Array) => Uint8Array;
@@ -116,6 +106,16 @@ declare namespace password {
     type Hash = Record<string, Password | Secret | Specific>;
 }
 type RawPassword = Password | password.Secret | password.Specific;
+
+declare const fromUtf8: (input: string) => Uint8Array;
+
+/**
+ *
+ * This does not convert non-utf8 strings to utf8, it only passes through strings if
+ * a string is received instead of a Uint8Array.
+ *
+ */
+declare const toUtf8: (input: Uint8Array | string) => string;
 
 declare const base64urlEncode: (value: Uint8Array | string) => string;
 declare const base64urlDecode: (value: string) => Uint8Array;

@@ -109,7 +109,7 @@ function toBase64(_input) {
 // src/index.ts
 var base64urlEncode = (value) => toBase64(value).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 var base64urlDecode = (value) => fromBase64(
-  value.replace(/-/g, "+").replace(/_/g, "/") + Array((4 - value.length % 4) % 4 + 1).join("=")
+  value.replace(/-/g, "+").replace(/_/g, "/") + Array.from({ length: (4 - value.length % 4) % 4 + 1 }).join("=")
 );
 var defaults = {
   encryption: { saltBits: 256, algorithm: "aes-256-cbc", iterations: 1, minPasswordlength: 32 },
@@ -137,7 +137,7 @@ var randomBytes = (_crypto, size) => {
 };
 var randomBits = (_crypto, bits) => {
   if (bits < 1)
-    throw Error("Invalid random bits count");
+    throw new Error("Invalid random bits count");
   const bytes = Math.ceil(bits / 8);
   return randomBytes(_crypto, bytes);
 };
@@ -241,20 +241,20 @@ var normalizePassword = (password) => {
 };
 var seal = async (_crypto, object, password, options) => {
   if (!password)
-    throw Error("Empty password");
+    throw new Error("Empty password");
   const opts = clone(options);
   const now = Date.now() + (opts.localtimeOffsetMsec || 0);
   const objectString = JSON.stringify(object);
   const pass = normalizePassword(password);
-  const { id = "" } = pass;
+  const { id = "", encryption, integrity } = pass;
   if (id && !/^\w+$/.test(id))
     throw new Error("Invalid password id");
-  const { encrypted, key } = await encrypt(_crypto, pass.encryption, opts.encryption, objectString);
+  const { encrypted, key } = await encrypt(_crypto, encryption, opts.encryption, objectString);
   const encryptedB64 = base64urlEncode(new Uint8Array(encrypted));
   const iv = base64urlEncode(key.iv);
   const expiration = opts.ttl ? now + opts.ttl : "";
   const macBaseString = `${macPrefix}*${id}*${key.salt}*${iv}*${encryptedB64}*${expiration}`;
-  const mac = await hmacWithPassword(_crypto, pass.integrity, opts.integrity, macBaseString);
+  const mac = await hmacWithPassword(_crypto, integrity, opts.integrity, macBaseString);
   const sealed = `${macBaseString}*${mac.salt}*${mac.digest}`;
   return sealed;
 };
@@ -268,7 +268,7 @@ var fixedTimeComparison = (a, b) => {
 };
 var unseal = async (_crypto, sealed, password, options) => {
   if (!password)
-    throw Error("Empty password");
+    throw new Error("Empty password");
   const opts = clone(options);
   const now = Date.now() + (opts.localtimeOffsetMsec || 0);
   const parts = sealed.split("*");
@@ -286,22 +286,21 @@ var unseal = async (_crypto, sealed, password, options) => {
   if (macPrefix !== prefix)
     throw new Error("Wrong mac prefix");
   if (expiration) {
-    if (!/^\d+$/.exec(expiration))
+    if (!/^\d+$/.test(expiration))
       throw new Error("Invalid expiration");
-    const exp = parseInt(expiration, 10);
+    const exp = Number.parseInt(expiration, 10);
     if (exp <= now - opts.timestampSkewSec * 1e3)
       throw new Error("Expired seal");
   }
-  if (typeof password === "undefined" || typeof password === "string" && password.length === 0)
-    throw new Error("Empty password");
   let pass = "";
   passwordId = passwordId || "default";
   if (typeof password === "string" || password instanceof Uint8Array)
     pass = password;
-  else if (!(passwordId in password))
-    throw new Error(`Cannot find password: ${passwordId}`);
-  else
+  else if (passwordId in password) {
     pass = password[passwordId];
+  } else {
+    throw new Error(`Cannot find password: ${passwordId}`);
+  }
   pass = normalizePassword(pass);
   const macOptions = opts.integrity;
   macOptions.salt = hmacSalt;
