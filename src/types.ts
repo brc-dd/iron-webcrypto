@@ -113,4 +113,7 @@ export declare namespace password {
   type Hash = Record<string, Password | Secret | Specific>
 }
 
+/**
+ * @internal
+ */
 export type RawPassword = Password | password.Secret | password.Specific

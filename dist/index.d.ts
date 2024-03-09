@@ -105,24 +105,49 @@ declare namespace password {
      */
     type Hash = Record<string, Password | Secret | Specific>;
 }
+/**
+ * @internal
+ */
 type RawPassword = Password | password.Secret | password.Specific;
 
-declare const fromUtf8: (input: string) => Uint8Array;
-
 /**
- *
- * This does not convert non-utf8 strings to utf8, it only passes through strings if
- * a string is received instead of a Uint8Array.
- *
+ * Convert a string to a Uint8Array.
+ * @param value The string to convert
+ * @returns The Uint8Array
  */
-declare const toUtf8: (input: Uint8Array | string) => string;
+declare const stringToBuffer: (value: string) => Uint8Array;
+/**
+ * Convert a Uint8Array to a string.
+ * @param value The Uint8Array to convert
+ * @returns The string
+ */
+declare const bufferToString: (value: Uint8Array) => string;
+/**
+ * Decode a base64url string to a Uint8Array.
+ * @param _input The base64url string to decode (automatically padded as necessary)
+ * @returns The Uint8Array
+ *
+ * @see https://tools.ietf.org/html/rfc4648#section-5
+ */
+declare const base64urlDecode: (_input: string) => Uint8Array;
+/**
+ * Encode a Uint8Array to a base64url string.
+ * @param _input The Uint8Array to encode
+ * @returns The base64url string (without padding)
+ *
+ * @see https://tools.ietf.org/html/rfc4648#section-5
+ */
+declare const base64urlEncode: (_input: Uint8Array | string) => string;
 
-declare const base64urlEncode: (value: Uint8Array | string) => string;
-declare const base64urlDecode: (value: string) => Uint8Array;
 /**
  * The default encryption and integrity settings.
  */
 declare const defaults: SealOptions;
+/**
+ * Clones the options object.
+ * @param options The options object to clone
+ * @returns A new options object
+ */
 declare const clone: (options: SealOptions) => SealOptions;
 /**
  * Configuration of each supported algorithm.
@@ -161,8 +186,8 @@ declare const randomBits: (_crypto: _Crypto, bits: number) => Uint8Array;
 /**
  * Generates a key from the password.
  * @param _crypto Custom WebCrypto implementation
- * @param password - A password string or buffer key
- * @param options - Object used to customize the key derivation algorithm
+ * @param password A password string or buffer key
+ * @param options Object used to customize the key derivation algorithm
  * @returns An object with keys: key, salt, iv
  */
 declare const generateKey: (_crypto: _Crypto, password: Password, options: GenerateKeyOptions) => Promise<Key>;
@@ -215,4 +240,4 @@ declare const seal: (_crypto: _Crypto, object: unknown, password: RawPassword, o
  */
 declare const unseal: (_crypto: _Crypto, sealed: string, password: Password | password.Hash, options: SealOptions) => Promise<unknown>;
 
-export { type GenerateKeyOptions, type HMacResult, type Key, type Password, type RawPassword, type SealOptions, type SealOptionsSub, algorithms, base64urlDecode, base64urlEncode, toUtf8 as bufferToString, clone, decrypt, defaults, encrypt, generateKey, hmacWithPassword, macFormatVersion, macPrefix, password, randomBits, seal, fromUtf8 as stringToBuffer, unseal };
+export { type GenerateKeyOptions, type HMacResult, type Key, type Password, type RawPassword, type SealOptions, type SealOptionsSub, algorithms, base64urlDecode, base64urlEncode, bufferToString, clone, decrypt, defaults, encrypt, generateKey, hmacWithPassword, macFormatVersion, macPrefix, password, randomBits, seal, stringToBuffer, unseal };

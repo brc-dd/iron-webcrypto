@@ -1,5 +1,3 @@
-import { fromBase64, toBase64 } from '@smithy/util-base64'
-import { fromUtf8 as stringToBuffer, toUtf8 as bufferToString } from '@smithy/util-utf8'
 import type { _Crypto } from './_crypto.js'
 import type {
   GenerateKeyOptions,
@@ -10,20 +8,11 @@ import type {
   SealOptions,
   password
 } from './types.js'
+import { base64urlDecode, base64urlEncode, bufferToString, stringToBuffer } from './utils.js'
 
-// re-export all types
+// re-export all types and utilities
 export type * from './types.js'
-
-export { fromUtf8 as stringToBuffer, toUtf8 as bufferToString } from '@smithy/util-utf8'
-
-export const base64urlEncode = (value: Uint8Array | string): string =>
-  toBase64(value).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
-
-export const base64urlDecode = (value: string): Uint8Array =>
-  fromBase64(
-    value.replace(/-/g, '+').replace(/_/g, '/') +
-      Array.from({ length: ((4 - (value.length % 4)) % 4) + 1 }).join('=')
-  )
+export * from './utils.js'
 
 /**
  * The default encryption and integrity settings.
@@ -36,6 +25,11 @@ export const defaults: SealOptions = {
   localtimeOffsetMsec: 0
 }
 
+/**
+ * Clones the options object.
+ * @param options The options object to clone
+ * @returns A new options object
+ */
 export const clone = (options: SealOptions): SealOptions => ({
   ...options,
   encryption: { ...options.encryption },
@@ -59,7 +53,7 @@ export const macFormatVersion = '2'
 /**
  * MAC normalization prefix.
  */
-export const macPrefix = `Fe26.${macFormatVersion}`
+export const macPrefix = 'Fe26.2' // `Fe26.${macFormatVersion}`
 
 /**
  * Generates cryptographically strong pseudorandom bytes.
@@ -87,6 +81,12 @@ export const randomBits = (_crypto: _Crypto, bits: number): Uint8Array => {
 
 /**
  * Provides an asynchronous Password-Based Key Derivation Function 2 (PBKDF2) implementation.
+ * @param _crypto Custom WebCrypto implementation
+ * @param password A password string or buffer key
+ * @param salt A salt string or buffer
+ * @param iterations The number of iterations to use
+ * @param keyLength The length of the derived key in bytes
+ * @param hash The hash algorithm to use
  */
 const pbkdf2 = async (
   _crypto: _Crypto,
@@ -109,8 +109,8 @@ const pbkdf2 = async (
 /**
  * Generates a key from the password.
  * @param _crypto Custom WebCrypto implementation
- * @param password - A password string or buffer key
- * @param options - Object used to customize the key derivation algorithm
+ * @param password A password string or buffer key
+ * @param options Object used to customize the key derivation algorithm
  * @returns An object with keys: key, salt, iv
  */
 export const generateKey = async (

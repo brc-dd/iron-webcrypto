@@ -1,8 +1,8 @@
 'use strict';
 
-// node_modules/.pnpm/@smithy+util-base64@2.2.0/node_modules/@smithy/util-base64/dist-es/constants.browser.js
+// src/utils.ts
 var alphabetByEncoding = {};
-var alphabetByValue = new Array(64);
+var alphabetByValue = Array.from({ length: 64 });
 for (let i = 0, start = "A".charCodeAt(0), limit = "Z".charCodeAt(0); i + start <= limit; i++) {
   const char = String.fromCharCode(i + start);
   alphabetByEncoding[char] = i;
@@ -21,20 +21,25 @@ for (let i = 0; i < 10; i++) {
   alphabetByEncoding[char] = index;
   alphabetByValue[index] = char;
 }
-alphabetByEncoding["+"] = 62;
-alphabetByValue[62] = "+";
-alphabetByEncoding["/"] = 63;
-alphabetByValue[63] = "/";
+alphabetByEncoding["-"] = 62;
+alphabetByValue[62] = "-";
+alphabetByEncoding["_"] = 63;
+alphabetByValue[63] = "_";
 var bitsPerLetter = 6;
 var bitsPerByte = 8;
 var maxLetterValue = 63;
-
-// node_modules/.pnpm/@smithy+util-base64@2.2.0/node_modules/@smithy/util-base64/dist-es/fromBase64.browser.js
-var fromBase64 = (input) => {
+var stringToBuffer = (value) => {
+  return new TextEncoder().encode(value);
+};
+var bufferToString = (value) => {
+  return new TextDecoder().decode(value);
+};
+var base64urlDecode = (_input) => {
+  const input = _input + "=".repeat((4 - _input.length % 4) % 4);
   let totalByteLength = input.length / 4 * 3;
-  if (input.slice(-2) === "==") {
+  if (input.endsWith("==")) {
     totalByteLength -= 2;
-  } else if (input.slice(-1) === "=") {
+  } else if (input.endsWith("=")) {
     totalByteLength--;
   }
   const out = new ArrayBuffer(totalByteLength);
@@ -43,14 +48,14 @@ var fromBase64 = (input) => {
     let bits = 0;
     let bitLength = 0;
     for (let j = i, limit = i + 3; j <= limit; j++) {
-      if (input[j] !== "=") {
+      if (input[j] === "=") {
+        bits >>= bitsPerLetter;
+      } else {
         if (!(input[j] in alphabetByEncoding)) {
           throw new TypeError(`Invalid character ${input[j]} in base64 string.`);
         }
         bits |= alphabetByEncoding[input[j]] << (limit - j) * bitsPerLetter;
         bitLength += bitsPerLetter;
-      } else {
-        bits >>= bitsPerLetter;
       }
     }
     const chunkOffset = i / 4 * 3;
@@ -63,32 +68,8 @@ var fromBase64 = (input) => {
   }
   return new Uint8Array(out);
 };
-
-// node_modules/.pnpm/@smithy+util-utf8@2.2.0/node_modules/@smithy/util-utf8/dist-es/fromUtf8.browser.js
-var fromUtf8 = (input) => new TextEncoder().encode(input);
-
-// node_modules/.pnpm/@smithy+util-utf8@2.2.0/node_modules/@smithy/util-utf8/dist-es/toUtf8.browser.js
-var toUtf8 = (input) => {
-  if (typeof input === "string") {
-    return input;
-  }
-  if (typeof input !== "object" || typeof input.byteOffset !== "number" || typeof input.byteLength !== "number") {
-    throw new Error("@smithy/util-utf8: toUtf8 encoder function only accepts string | Uint8Array.");
-  }
-  return new TextDecoder("utf-8").decode(input);
-};
-
-// node_modules/.pnpm/@smithy+util-base64@2.2.0/node_modules/@smithy/util-base64/dist-es/toBase64.browser.js
-function toBase64(_input) {
-  let input;
-  if (typeof _input === "string") {
-    input = fromUtf8(_input);
-  } else {
-    input = _input;
-  }
-  if (typeof input !== "object" || typeof input.byteOffset !== "number" || typeof input.byteLength !== "number") {
-    throw new Error("@smithy/util-base64: toBase64 encoder function only accepts string | Uint8Array.");
-  }
+var base64urlEncode = (_input) => {
+  const input = typeof _input === "string" ? stringToBuffer(_input) : _input;
   let str = "";
   for (let i = 0; i < input.length; i += 3) {
     let bits = 0;
@@ -103,16 +84,11 @@ function toBase64(_input) {
       const offset = (bitClusterCount - k) * bitsPerLetter;
       str += alphabetByValue[(bits & maxLetterValue << offset) >> offset];
     }
-    str += "==".slice(0, 4 - bitClusterCount);
   }
   return str;
-}
+};
 
 // src/index.ts
-var base64urlEncode = (value) => toBase64(value).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
-var base64urlDecode = (value) => fromBase64(
-  value.replace(/-/g, "+").replace(/_/g, "/") + Array.from({ length: (4 - value.length % 4) % 4 + 1 }).join("=")
-);
 var defaults = {
   encryption: { saltBits: 256, algorithm: "aes-256-cbc", iterations: 1, minPasswordlength: 32 },
   integrity: { saltBits: 256, algorithm: "sha256", iterations: 1, minPasswordlength: 32 },
@@ -131,7 +107,7 @@ var algorithms = {
   sha256: { keyBits: 256, name: "SHA-256" }
 };
 var macFormatVersion = "2";
-var macPrefix = `Fe26.${macFormatVersion}`;
+var macPrefix = "Fe26.2";
 var randomBytes = (_crypto, size) => {
   const bytes = new Uint8Array(size);
   _crypto.getRandomValues(bytes);
@@ -144,11 +120,11 @@ var randomBits = (_crypto, bits) => {
   return randomBytes(_crypto, bytes);
 };
 var pbkdf2 = async (_crypto, password, salt, iterations, keyLength, hash) => {
-  const passwordBuffer = fromUtf8(password);
+  const passwordBuffer = stringToBuffer(password);
   const importedKey = await _crypto.subtle.importKey("raw", passwordBuffer, "PBKDF2", false, [
     "deriveBits"
   ]);
-  const saltBuffer = fromUtf8(salt);
+  const saltBuffer = stringToBuffer(salt);
   const params = { name: "PBKDF2", hash, salt: saltBuffer, iterations };
   const derivation = await _crypto.subtle.deriveBits(params, importedKey, keyLength * 8);
   return derivation;
@@ -210,7 +186,7 @@ var generateKey = async (_crypto, password, options) => {
 };
 var encrypt = async (_crypto, password, options, data) => {
   const key = await generateKey(_crypto, password, options);
-  const textBuffer = fromUtf8(data);
+  const textBuffer = stringToBuffer(data);
   const encrypted = await _crypto.subtle.encrypt(
     { name: algorithms[options.algorithm].name, iv: key.iv },
     key.key,
@@ -223,13 +199,13 @@ var decrypt = async (_crypto, password, options, data) => {
   const decrypted = await _crypto.subtle.decrypt(
     { name: algorithms[options.algorithm].name, iv: key.iv },
     key.key,
-    typeof data === "string" ? fromUtf8(data) : data
+    typeof data === "string" ? stringToBuffer(data) : data
   );
-  return toUtf8(new Uint8Array(decrypted));
+  return bufferToString(new Uint8Array(decrypted));
 };
 var hmacWithPassword = async (_crypto, password, options, data) => {
   const key = await generateKey(_crypto, password, { ...options, hmac: true });
-  const textBuffer = fromUtf8(data);
+  const textBuffer = stringToBuffer(data);
   const signed = await _crypto.subtle.sign({ name: "HMAC" }, key.key, textBuffer);
   const digest = base64urlEncode(new Uint8Array(signed));
   return { digest, salt: key.salt };
@@ -322,7 +298,7 @@ var unseal = async (_crypto, sealed, password, options) => {
 exports.algorithms = algorithms;
 exports.base64urlDecode = base64urlDecode;
 exports.base64urlEncode = base64urlEncode;
-exports.bufferToString = toUtf8;
+exports.bufferToString = bufferToString;
 exports.clone = clone;
 exports.decrypt = decrypt;
 exports.defaults = defaults;
@@ -333,5 +309,5 @@ exports.macFormatVersion = macFormatVersion;
 exports.macPrefix = macPrefix;
 exports.randomBits = randomBits;
 exports.seal = seal;
-exports.stringToBuffer = fromUtf8;
+exports.stringToBuffer = stringToBuffer;
 exports.unseal = unseal;
