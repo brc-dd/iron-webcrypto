@@ -1,4 +1,10 @@
-# iron-webcrypto [![jsDocs.io](https://img.shields.io/badge/jsDocs.io-reference-blue?style=flat-square)](https://www.jsdocs.io/package/iron-webcrypto) [![downloads](https://img.shields.io/npm/dm/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto) [![npm](https://img.shields.io/npm/v/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto) [![deno](https://img.shields.io/badge/deno-iron@v1.0.0-blue.svg?style=flat-square)](https://deno.land/x/iron@v1.0.0/mod.ts)
+# iron-webcrypto
+
+[![jsDocs.io](https://img.shields.io/badge/jsDocs.io-reference-blue?style=flat-square)](https://www.jsdocs.io/package/iron-webcrypto)
+[![downloads](https://img.shields.io/npm/dm/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto)
+[![npm](https://img.shields.io/npm/v/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto)
+[![deno](https://img.shields.io/badge/deno-iron@v1.0.0-blue.svg?style=flat-square)](https://deno.land/x/iron@v1.0.0/mod.ts)
+[![jsr](https://img.shields.io/badge/jsr-@brc--dd/iron@v1.0.0-blue.svg?style=flat-square)](https://jsr.io/@brc-dd/iron)
 
 This module is a replacement for `@hapi/iron`, written using standard APIs like
 Web Crypto and Uint8Array, which make this compatible with a variety of runtimes
