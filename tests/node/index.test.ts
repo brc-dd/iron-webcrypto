@@ -1,16 +1,7 @@
-/// <reference lib="dom" />
-
-import assert from 'assert'
-import crypto from 'crypto'
-import test from 'test'
+import { deepStrictEqual as deepEqual, rejects } from 'node:assert'
+import { describe, it } from 'node:test'
+import { createHmac, webcrypto } from 'node:crypto'
 import { tests } from '../index.js'
 
-tests({
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  crypto: globalThis.crypto ?? crypto.webcrypto,
-  createHmac: crypto.createHmac,
-  describe: test.describe,
-  it: test.it,
-  deepEqual: assert.deepStrictEqual,
-  rejects: assert.rejects
-})
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-misused-promises
+tests({ crypto: globalThis.crypto ?? webcrypto, createHmac, describe, it, deepEqual, rejects })

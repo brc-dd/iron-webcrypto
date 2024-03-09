@@ -1,6 +1,6 @@
-// node_modules/.pnpm/@smithy+util-base64@2.0.1/node_modules/@smithy/util-base64/dist-es/constants.browser.js
+// src/utils.ts
 var alphabetByEncoding = {};
-var alphabetByValue = new Array(64);
+var alphabetByValue = Array.from({ length: 64 });
 for (let i = 0, start = "A".charCodeAt(0), limit = "Z".charCodeAt(0); i + start <= limit; i++) {
   const char = String.fromCharCode(i + start);
   alphabetByEncoding[char] = i;
@@ -19,20 +19,25 @@ for (let i = 0; i < 10; i++) {
   alphabetByEncoding[char] = index;
   alphabetByValue[index] = char;
 }
-alphabetByEncoding["+"] = 62;
-alphabetByValue[62] = "+";
-alphabetByEncoding["/"] = 63;
-alphabetByValue[63] = "/";
+alphabetByEncoding["-"] = 62;
+alphabetByValue[62] = "-";
+alphabetByEncoding["_"] = 63;
+alphabetByValue[63] = "_";
 var bitsPerLetter = 6;
 var bitsPerByte = 8;
 var maxLetterValue = 63;
-
-// node_modules/.pnpm/@smithy+util-base64@2.0.1/node_modules/@smithy/util-base64/dist-es/fromBase64.browser.js
-var fromBase64 = (input) => {
+var stringToBuffer = (value) => {
+  return new TextEncoder().encode(value);
+};
+var bufferToString = (value) => {
+  return new TextDecoder().decode(value);
+};
+var base64urlDecode = (_input) => {
+  const input = _input + "=".repeat((4 - _input.length % 4) % 4);
   let totalByteLength = input.length / 4 * 3;
-  if (input.slice(-2) === "==") {
+  if (input.endsWith("==")) {
     totalByteLength -= 2;
-  } else if (input.slice(-1) === "=") {
+  } else if (input.endsWith("=")) {
     totalByteLength--;
   }
   const out = new ArrayBuffer(totalByteLength);
@@ -41,14 +46,14 @@ var fromBase64 = (input) => {
     let bits = 0;
     let bitLength = 0;
     for (let j = i, limit = i + 3; j <= limit; j++) {
-      if (input[j] !== "=") {
+      if (input[j] === "=") {
+        bits >>= bitsPerLetter;
+      } else {
         if (!(input[j] in alphabetByEncoding)) {
           throw new TypeError(`Invalid character ${input[j]} in base64 string.`);
         }
         bits |= alphabetByEncoding[input[j]] << (limit - j) * bitsPerLetter;
         bitLength += bitsPerLetter;
-      } else {
-        bits >>= bitsPerLetter;
       }
     }
     const chunkOffset = i / 4 * 3;
@@ -61,9 +66,8 @@ var fromBase64 = (input) => {
   }
   return new Uint8Array(out);
 };
-
-// node_modules/.pnpm/@smithy+util-base64@2.0.1/node_modules/@smithy/util-base64/dist-es/toBase64.browser.js
-function toBase64(input) {
+var base64urlEncode = (_input) => {
+  const input = typeof _input === "string" ? stringToBuffer(_input) : _input;
   let str = "";
   for (let i = 0; i < input.length; i += 3) {
     let bits = 0;
@@ -78,22 +82,11 @@ function toBase64(input) {
       const offset = (bitClusterCount - k) * bitsPerLetter;
       str += alphabetByValue[(bits & maxLetterValue << offset) >> offset];
     }
-    str += "==".slice(0, 4 - bitClusterCount);
   }
   return str;
-}
+};
 
 // src/index.ts
-var stringToBuffer = (value) => {
-  return new TextEncoder().encode(value);
-};
-var bufferToString = (value) => {
-  return new TextDecoder().decode(value);
-};
-var base64urlEncode = (value) => toBase64(typeof value === "string" ? stringToBuffer(value) : value).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
-var base64urlDecode = (value) => fromBase64(
-  value.replace(/-/g, "+").replace(/_/g, "/") + Array((4 - value.length % 4) % 4 + 1).join("=")
-);
 var defaults = {
   encryption: { saltBits: 256, algorithm: "aes-256-cbc", iterations: 1, minPasswordlength: 32 },
   integrity: { saltBits: 256, algorithm: "sha256", iterations: 1, minPasswordlength: 32 },
@@ -112,7 +105,7 @@ var algorithms = {
   sha256: { keyBits: 256, name: "SHA-256" }
 };
 var macFormatVersion = "2";
-var macPrefix = `Fe26.${macFormatVersion}`;
+var macPrefix = "Fe26.2";
 var randomBytes = (_crypto, size) => {
   const bytes = new Uint8Array(size);
   _crypto.getRandomValues(bytes);
@@ -120,7 +113,7 @@ var randomBytes = (_crypto, size) => {
 };
 var randomBits = (_crypto, bits) => {
   if (bits < 1)
-    throw Error("Invalid random bits count");
+    throw new Error("Invalid random bits count");
   const bytes = Math.ceil(bits / 8);
   return randomBytes(_crypto, bytes);
 };
@@ -224,20 +217,20 @@ var normalizePassword = (password) => {
 };
 var seal = async (_crypto, object, password, options) => {
   if (!password)
-    throw Error("Empty password");
+    throw new Error("Empty password");
   const opts = clone(options);
   const now = Date.now() + (opts.localtimeOffsetMsec || 0);
   const objectString = JSON.stringify(object);
   const pass = normalizePassword(password);
-  const { id = "" } = pass;
+  const { id = "", encryption, integrity } = pass;
   if (id && !/^\w+$/.test(id))
     throw new Error("Invalid password id");
-  const { encrypted, key } = await encrypt(_crypto, pass.encryption, opts.encryption, objectString);
+  const { encrypted, key } = await encrypt(_crypto, encryption, opts.encryption, objectString);
   const encryptedB64 = base64urlEncode(new Uint8Array(encrypted));
   const iv = base64urlEncode(key.iv);
   const expiration = opts.ttl ? now + opts.ttl : "";
   const macBaseString = `${macPrefix}*${id}*${key.salt}*${iv}*${encryptedB64}*${expiration}`;
-  const mac = await hmacWithPassword(_crypto, pass.integrity, opts.integrity, macBaseString);
+  const mac = await hmacWithPassword(_crypto, integrity, opts.integrity, macBaseString);
   const sealed = `${macBaseString}*${mac.salt}*${mac.digest}`;
   return sealed;
 };
@@ -251,7 +244,7 @@ var fixedTimeComparison = (a, b) => {
 };
 var unseal = async (_crypto, sealed, password, options) => {
   if (!password)
-    throw Error("Empty password");
+    throw new Error("Empty password");
   const opts = clone(options);
   const now = Date.now() + (opts.localtimeOffsetMsec || 0);
   const parts = sealed.split("*");
@@ -269,22 +262,21 @@ var unseal = async (_crypto, sealed, password, options) => {
   if (macPrefix !== prefix)
     throw new Error("Wrong mac prefix");
   if (expiration) {
-    if (!/^\d+$/.exec(expiration))
+    if (!/^\d+$/.test(expiration))
       throw new Error("Invalid expiration");
-    const exp = parseInt(expiration, 10);
+    const exp = Number.parseInt(expiration, 10);
     if (exp <= now - opts.timestampSkewSec * 1e3)
       throw new Error("Expired seal");
   }
-  if (typeof password === "undefined" || typeof password === "string" && password.length === 0)
-    throw new Error("Empty password");
   let pass = "";
   passwordId = passwordId || "default";
   if (typeof password === "string" || password instanceof Uint8Array)
     pass = password;
-  else if (!(passwordId in password))
-    throw new Error(`Cannot find password: ${passwordId}`);
-  else
+  else if (passwordId in password) {
     pass = password[passwordId];
+  } else {
+    throw new Error(`Cannot find password: ${passwordId}`);
+  }
   pass = normalizePassword(pass);
   const macOptions = opts.integrity;
   macOptions.salt = hmacSalt;

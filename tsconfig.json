@@ -2,12 +2,15 @@
   "compilerOptions": {
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
-    "checkJs": true,
     "esModuleInterop": true,
     "exactOptionalPropertyTypes": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
     "lib": ["esnext", "dom"],
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
+    "module": "node16",
+    "moduleDetection": "force",
+    "moduleResolution": "node16",
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
@@ -15,14 +18,11 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "outDir": "dist",
+    "resolveJsonModule": true,
     "rootDir": ".",
-    "skipLibCheck": true,
     "strict": true,
-    "target": "esnext",
-    "verbatimModuleSyntax": true,
-    "paths": {
-      "@smithy/util-base64/dist-es/*": ["./node_modules/@smithy/util-base64/dist-types/*"]
-    }
+    "target": "es2022",
+    "verbatimModuleSyntax": true
   },
   "exclude": ["dist", "tests/deno"]
 }

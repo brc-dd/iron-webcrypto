@@ -1,4 +1,10 @@
-# iron-webcrypto [![jsDocs.io](https://img.shields.io/badge/jsDocs.io-reference-blue?style=flat-square)](https://www.jsdocs.io/package/iron-webcrypto) [![downloads](https://img.shields.io/npm/dm/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto) [![npm](https://img.shields.io/npm/v/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto) [![deno](https://img.shields.io/badge/deno-iron@v1.0.0-blue.svg?style=flat-square)](https://deno.land/x/iron@v1.0.0/mod.ts)
+# iron-webcrypto
+
+[![jsDocs.io](https://img.shields.io/badge/jsDocs.io-reference-blue?style=flat-square)](https://www.jsdocs.io/package/iron-webcrypto)
+[![downloads](https://img.shields.io/npm/dm/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto)
+[![npm](https://img.shields.io/npm/v/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto)
+[![deno](https://img.shields.io/badge/deno-iron@v1.0.0-blue.svg?style=flat-square)](https://deno.land/x/iron@v1.0.0/mod.ts)
+[![jsr](https://img.shields.io/badge/jsr-@brc--dd/iron@v1.0.0-blue.svg?style=flat-square)](https://jsr.io/@brc-dd/iron)
 
 This module is a replacement for `@hapi/iron`, written using standard APIs like
 Web Crypto and Uint8Array, which make this compatible with a variety of runtimes
@@ -13,24 +19,49 @@ like Node.js, Deno, Bun, browsers, workers, and edge environments. Refer
 
 ## Installation
 
-Simply run:
+For Node.js and Bun, run any of the following commands depending on your package
+manager / runtime:
 
 ```sh
 npm add iron-webcrypto
+yarn add iron-webcrypto
+pnpm add iron-webcrypto
+bun add iron-webcrypto
 ```
 
-Change the package manager to whatever you like. On Deno and browsers, you can
-use [esm.sh](https://esm.sh/) for importing this:
+You can then import it using:
 
 ```ts
-import * as Iron from 'https://esm.sh/iron-webcrypto@1.0.0'
+import * as Iron from 'iron-webcrypto'
 ```
 
-This module is also published on `deno.land/x` as `iron`:
+If using JSR, run any of the following commands depending on your package
+manager / runtime:
+
+```sh
+npx jsr add @brc-dd/iron
+yarn dlx jsr add @brc-dd/iron
+pnpm dlx jsr add @brc-dd/iron
+bunx jsr add @brc-dd/iron
+deno add @brc-dd/iron
+```
+
+You can then import it using:
+
+```ts
+import * as Iron from '@brc-dd/iron'
+```
+
+On Deno, you can also any of the following imports:
 
 ```ts
 import * as Iron from 'https://deno.land/x/iron@v1.0.0/mod.ts'
+import * as Iron from 'https://esm.sh/iron-webcrypto@1.0.0'
+import * as Iron from 'npm:iron-webcrypto@1.0.0'
 ```
+
+Don't use this module directly in the browser. While it will work, it's not
+recommended to use it in client-side code because of the security implications.
 
 ## Usage
 
@@ -95,13 +126,17 @@ thoroughly review the code.
 
 @smithy/util-base64
     Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-    https://cdn.jsdelivr.net/npm/@smithy/util-base64@2.0.1/LICENSE
+    https://cdn.jsdelivr.net/npm/@smithy/util-base64@2.2.0/LICENSE
+
+@smithy/util-utf8
+    Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+    https://cdn.jsdelivr.net/npm/@smithy/util-utf8@2.2.0/LICENSE
 ```
 
 ## Sponsors
 
 <p align="center">
   <a href="https://cdn.jsdelivr.net/gh/brc-dd/static/sponsors.svg">
-    <img src='https://cdn.jsdelivr.net/gh/brc-dd/static/sponsors.svg'/>
+    <img alt="brc-dd's sponsors" src='https://cdn.jsdelivr.net/gh/brc-dd/static/sponsors.svg'/>
   </a>
 </p>

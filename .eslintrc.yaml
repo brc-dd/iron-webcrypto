@@ -4,15 +4,18 @@ env:
 extends:
   - plugin:import/recommended
   - plugin:import/typescript
-  - plugin:security/recommended
+  - plugin:security/recommended-legacy
   - eslint:recommended
   - plugin:@typescript-eslint/all
   - airbnb-base
   - airbnb-typescript/base
+  - plugin:unicorn/all
   - plugin:prettier/recommended
 ignorePatterns:
   - dist
   - tests/deno
+  - tests/bun/env.d.ts
+  - tsup.config.ts
 parser: '@typescript-eslint/parser'
 parserOptions:
   ecmaVersion: latest
@@ -36,3 +39,7 @@ rules:
   '@typescript-eslint/no-type-alias': off
   '@typescript-eslint/prefer-readonly-parameter-types': off
   '@typescript-eslint/max-params': off
+
+  unicorn/no-null: off
+  unicorn/prevent-abbreviations: off
+  unicorn/prefer-string-replace-all: off
