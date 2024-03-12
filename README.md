@@ -52,7 +52,7 @@ You can then import it using:
 import * as Iron from '@brc-dd/iron'
 ```
 
-On Deno, you can also any of the following imports:
+On Deno, you can also use any of the following imports:
 
 ```ts
 import * as Iron from 'https://deno.land/x/iron@v1.1.0/mod.ts'
