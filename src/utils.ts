@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/dot-notation, @typescript-eslint/no-non-null-assertion, no-bitwise, no-plusplus, unicorn/prefer-code-point */
 
-// https://github.com/smithy-lang/smithy-typescript/blob/9275e12bb1db680284681d5ff7277fe3315bbfba/packages/util-base64/src/constants.browser.ts
+// https://github.com/smithy-lang/smithy-typescript/blob/d4cd0661109dd77e65f382f9b8d6d6d7abee92b6/packages/util-base64/src/constants.browser.ts
 
 const alphabetByEncoding: Record<string, number> = {}
 const alphabetByValue: string[] = Array.from({ length: 64 })
@@ -54,7 +54,7 @@ export const bufferToString = (value: Uint8Array): string => {
   return new TextDecoder().decode(value)
 }
 
-// https://github.com/smithy-lang/smithy-typescript/blob/9275e12bb1db680284681d5ff7277fe3315bbfba/packages/util-base64/src/fromBase64.browser.ts
+// https://github.com/smithy-lang/smithy-typescript/blob/d4cd0661109dd77e65f382f9b8d6d6d7abee92b6/packages/util-base64/src/fromBase64.browser.ts
 
 /**
  * Decode a base64url string to a Uint8Array.
@@ -104,7 +104,7 @@ export const base64urlDecode = (_input: string): Uint8Array => {
   return new Uint8Array(out)
 }
 
-// https://github.com/smithy-lang/smithy-typescript/blob/9275e12bb1db680284681d5ff7277fe3315bbfba/packages/util-base64/src/toBase64.browser.ts
+// https://github.com/smithy-lang/smithy-typescript/blob/8e8f35138482f034b7ac092fc99d23ca4f611128/packages/util-base64/src/toBase64.browser.ts
 
 /**
  * Encode a Uint8Array to a base64url string.
