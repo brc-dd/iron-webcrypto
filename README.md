@@ -3,8 +3,8 @@
 [![jsDocs.io](https://img.shields.io/badge/jsDocs.io-reference-blue?style=flat-square)](https://www.jsdocs.io/package/iron-webcrypto)
 [![downloads](https://img.shields.io/npm/dm/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto)
 [![npm](https://img.shields.io/npm/v/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto)
-[![deno](https://img.shields.io/badge/deno-iron@v1.1.0-blue.svg?style=flat-square)](https://deno.land/x/iron@v1.1.0/mod.ts)
-[![jsr](https://img.shields.io/badge/jsr-@brc--dd/iron@v1.1.0-blue.svg?style=flat-square)](https://jsr.io/@brc-dd/iron)
+[![deno](https://img.shields.io/badge/deno-iron@v1.1.1-blue.svg?style=flat-square)](https://deno.land/x/iron@v1.1.1/mod.ts)
+[![jsr](https://img.shields.io/badge/jsr-@brc--dd/iron@v1.1.1-blue.svg?style=flat-square)](https://jsr.io/@brc-dd/iron)
 
 This module is a replacement for `@hapi/iron`, written using standard APIs like
 Web Crypto and Uint8Array, which make this compatible with a variety of runtimes
@@ -55,9 +55,9 @@ import * as Iron from '@brc-dd/iron'
 On Deno, you can also use any of the following imports:
 
 ```ts
-import * as Iron from 'https://deno.land/x/iron@v1.1.0/mod.ts'
-import * as Iron from 'https://esm.sh/iron-webcrypto@1.1.0'
-import * as Iron from 'npm:iron-webcrypto@1.1.0'
+import * as Iron from 'https://deno.land/x/iron@v1.1.1/mod.ts'
+import * as Iron from 'https://esm.sh/iron-webcrypto@1.1.1'
+import * as Iron from 'npm:iron-webcrypto@1.1.1'
 ```
 
 Don't use this module directly in the browser. While it will work, it's not

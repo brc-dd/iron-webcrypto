@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "iron-webcrypto",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "a cryptographic utility for sealing-unsealing a JSON object using symmetric key encryption with message integrity verification",
   "keywords": [
     "authentication",

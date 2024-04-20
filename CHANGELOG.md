@@ -1,5 +1,12 @@
 
 
+## [1.1.1](https://github.com/brc-dd/iron-webcrypto/compare/v1.1.0...v1.1.1) (2024-04-20)
+
+
+### Bug Fixes
+
+* **types:** it wrongfully allowed using digest algorithms in encryption options ([3f72198](https://github.com/brc-dd/iron-webcrypto/commit/3f7219847e3582bb9c8f817e2af8244f96435786))
+
 ## [1.1.0](https://github.com/brc-dd/iron-webcrypto/compare/v1.0.0...v1.1.0) (2024-03-09)
 
 ## [1.0.0](https://github.com/brc-dd/iron-webcrypto/compare/v0.10.1...v1.0.0) (2023-10-14)
