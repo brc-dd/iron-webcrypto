@@ -13,7 +13,7 @@ interface _SubtleCrypto {
 /**
  * seal() method options.
  */
-interface SealOptionsSub {
+interface SealOptionsSub<Algorithm extends string = 'aes-128-ctr' | 'aes-256-cbc' | 'sha256'> {
     /**
      * The length of the salt (random buffer used to ensure that two identical objects will generate a different encrypted result). Defaults to 256.
      */
@@ -21,7 +21,7 @@ interface SealOptionsSub {
     /**
      * The algorithm used. Defaults to 'aes-256-cbc' for encryption and 'sha256' for integrity.
      */
-    algorithm: 'aes-128-ctr' | 'aes-256-cbc' | 'sha256';
+    algorithm: Algorithm;
     /**
      * The number of iterations used to derive a key from the password. Defaults to 1.
      */
@@ -38,11 +38,11 @@ interface SealOptions {
     /**
      * Encryption step options.
      */
-    encryption: SealOptionsSub;
+    encryption: SealOptionsSub<'aes-128-ctr' | 'aes-256-cbc'>;
     /**
      * Integrity step options.
      */
-    integrity: SealOptionsSub;
+    integrity: SealOptionsSub<'sha256'>;
     /**
      * Sealed object lifetime in milliseconds where 0 means forever. Defaults to 0.
      */
