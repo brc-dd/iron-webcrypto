@@ -11,6 +11,7 @@ extends:
   - airbnb-typescript/base
   - plugin:unicorn/all
   - plugin:prettier/recommended
+  - plugin:@eslint-community/eslint-comments/recommended
 ignorePatterns:
   - dist
   - tests/deno
@@ -31,14 +32,17 @@ settings:
       alwaysTryTypes: true
       project: .
 rules:
+  '@eslint-community/eslint-comments/no-unused-disable': error
+
   import/extensions: off
   import/no-extraneous-dependencies: off
   import/prefer-default-export: off
   security/detect-object-injection: off
 
+  '@typescript-eslint/max-params': off
+  '@typescript-eslint/naming-convention': off
   '@typescript-eslint/no-type-alias': off
   '@typescript-eslint/prefer-readonly-parameter-types': off
-  '@typescript-eslint/max-params': off
 
   unicorn/no-null: off
   unicorn/prevent-abbreviations: off

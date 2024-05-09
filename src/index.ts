@@ -1,11 +1,14 @@
 import type { _Crypto } from './_crypto.js'
 import type {
+  EncryptionAlgorithm,
   GenerateKeyOptions,
   HMacResult,
+  IntegrityAlgorithm,
   Key,
   Password,
   RawPassword,
   SealOptions,
+  _Algorithm,
   password
 } from './types.js'
 import { base64urlDecode, base64urlEncode, bufferToString, stringToBuffer } from './utils.js'
@@ -43,7 +46,7 @@ export const algorithms = {
   'aes-128-ctr': { keyBits: 128, ivBits: 128, name: 'AES-CTR' },
   'aes-256-cbc': { keyBits: 256, ivBits: 128, name: 'AES-CBC' },
   sha256: { keyBits: 256, name: 'SHA-256' }
-} as const
+} as const satisfies Record<_Algorithm, { keyBits: number; ivBits?: number; name: string }>
 
 /**
  * MAC normalization format version.
@@ -97,9 +100,13 @@ const pbkdf2 = async (
   hash: HashAlgorithmIdentifier
 ): Promise<ArrayBuffer> => {
   const passwordBuffer = stringToBuffer(password)
-  const importedKey = await _crypto.subtle.importKey('raw', passwordBuffer, 'PBKDF2', false, [
-    'deriveBits'
-  ])
+  const importedKey = await _crypto.subtle.importKey(
+    'raw',
+    passwordBuffer,
+    { name: 'PBKDF2' },
+    false,
+    ['deriveBits']
+  )
   const saltBuffer = stringToBuffer(salt)
   const params = { name: 'PBKDF2', hash, salt: saltBuffer, iterations }
   const derivation = await _crypto.subtle.deriveBits(params, importedKey, keyLength * 8)
@@ -176,6 +183,23 @@ export const generateKey = async (
 }
 
 /**
+ * @internal
+ */
+const getEncryptParams = (
+  algorithm: EncryptionAlgorithm,
+  key: Key,
+  data: Uint8Array | string
+): [AesCbcParams | AesCtrParams, CryptoKey, Uint8Array] => {
+  return [
+    algorithm === 'aes-128-ctr'
+      ? ({ name: 'AES-CTR', counter: key.iv, length: 128 } satisfies AesCtrParams)
+      : ({ name: 'AES-CBC', iv: key.iv } satisfies AesCbcParams),
+    key.key,
+    typeof data === 'string' ? stringToBuffer(data) : data
+  ]
+}
+
+/**
  * Encrypts data.
  * @param _crypto Custom WebCrypto implementation
  * @param password A password string or buffer key
@@ -186,16 +210,11 @@ export const generateKey = async (
 export const encrypt = async (
   _crypto: _Crypto,
   password: Password,
-  options: GenerateKeyOptions,
+  options: GenerateKeyOptions<EncryptionAlgorithm>,
   data: string
 ): Promise<{ encrypted: Uint8Array; key: Key }> => {
   const key = await generateKey(_crypto, password, options)
-  const textBuffer = stringToBuffer(data)
-  const encrypted = await _crypto.subtle.encrypt(
-    { name: algorithms[options.algorithm].name, iv: key.iv },
-    key.key,
-    textBuffer
-  )
+  const encrypted = await _crypto.subtle.encrypt(...getEncryptParams(options.algorithm, key, data))
   return { encrypted: new Uint8Array(encrypted), key }
 }
 
@@ -210,15 +229,11 @@ export const encrypt = async (
 export const decrypt = async (
   _crypto: _Crypto,
   password: Password,
-  options: GenerateKeyOptions,
+  options: GenerateKeyOptions<EncryptionAlgorithm>,
   data: Uint8Array | string
 ): Promise<string> => {
   const key = await generateKey(_crypto, password, options)
-  const decrypted = await _crypto.subtle.decrypt(
-    { name: algorithms[options.algorithm].name, iv: key.iv },
-    key.key,
-    typeof data === 'string' ? stringToBuffer(data) : data
-  )
+  const decrypted = await _crypto.subtle.decrypt(...getEncryptParams(options.algorithm, key, data))
   return bufferToString(new Uint8Array(decrypted))
 }
 
@@ -233,7 +248,7 @@ export const decrypt = async (
 export const hmacWithPassword = async (
   _crypto: _Crypto,
   password: Password,
-  options: GenerateKeyOptions,
+  options: GenerateKeyOptions<IntegrityAlgorithm>,
   data: string
 ): Promise<HMacResult> => {
   const key = await generateKey(_crypto, password, { ...options, hmac: true })
@@ -365,14 +380,14 @@ export const unseal = async (
 
   pass = normalizePassword(pass)
 
-  const macOptions: GenerateKeyOptions = opts.integrity
+  const macOptions: GenerateKeyOptions<IntegrityAlgorithm> = opts.integrity
   macOptions.salt = hmacSalt
   const mac = await hmacWithPassword(_crypto, pass.integrity, macOptions, macBaseString)
 
   if (!fixedTimeComparison(mac.digest, hmac)) throw new Error('Bad hmac value')
 
   const encrypted = base64urlDecode(encryptedB64)
-  const decryptOptions: GenerateKeyOptions = opts.encryption
+  const decryptOptions: GenerateKeyOptions<EncryptionAlgorithm> = opts.encryption
   decryptOptions.salt = encryptionSalt
   decryptOptions.iv = base64urlDecode(encryptionIv)
 

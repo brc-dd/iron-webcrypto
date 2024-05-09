@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-
 export interface _Crypto {
   readonly subtle: _SubtleCrypto
   getRandomValues: (array: Uint8Array) => Uint8Array

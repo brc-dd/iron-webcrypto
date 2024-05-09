@@ -1,9 +1,23 @@
 /**
+ * Algorithm used for encryption and decryption.
+ */
+export type EncryptionAlgorithm = 'aes-128-ctr' | 'aes-256-cbc'
+
+/**
+ * Algorithm used for integrity verification.
+ */
+export type IntegrityAlgorithm = 'sha256'
+
+/**
+ * All algorithms supported by the library.
+ * @internal
+ */
+export type _Algorithm = EncryptionAlgorithm | IntegrityAlgorithm
+
+/**
  * seal() method options.
  */
-export interface SealOptionsSub<
-  Algorithm extends string = 'aes-128-ctr' | 'aes-256-cbc' | 'sha256'
-> {
+export interface SealOptionsSub<Algorithm extends _Algorithm = _Algorithm> {
   /**
    * The length of the salt (random buffer used to ensure that two identical objects will generate a different encrypted result). Defaults to 256.
    */
@@ -32,12 +46,12 @@ export interface SealOptions {
   /**
    * Encryption step options.
    */
-  encryption: SealOptionsSub<'aes-128-ctr' | 'aes-256-cbc'>
+  encryption: SealOptionsSub<EncryptionAlgorithm>
 
   /**
    * Integrity step options.
    */
-  integrity: SealOptionsSub<'sha256'>
+  integrity: SealOptionsSub<IntegrityAlgorithm>
 
   /**
    * Sealed object lifetime in milliseconds where 0 means forever. Defaults to 0.
@@ -63,8 +77,8 @@ export type Password = Uint8Array | string
 /**
  * generateKey() method options.
  */
-export type GenerateKeyOptions = Pick<
-  SealOptionsSub,
+export type GenerateKeyOptions<Algorithm extends _Algorithm = _Algorithm> = Pick<
+  SealOptionsSub<Algorithm>,
   'algorithm' | 'iterations' | 'minPasswordlength'
 > & {
   saltBits?: number | undefined

@@ -121,9 +121,13 @@ var randomBits = (_crypto, bits) => {
 };
 var pbkdf2 = async (_crypto, password, salt, iterations, keyLength, hash) => {
   const passwordBuffer = stringToBuffer(password);
-  const importedKey = await _crypto.subtle.importKey("raw", passwordBuffer, "PBKDF2", false, [
-    "deriveBits"
-  ]);
+  const importedKey = await _crypto.subtle.importKey(
+    "raw",
+    passwordBuffer,
+    { name: "PBKDF2" },
+    false,
+    ["deriveBits"]
+  );
   const saltBuffer = stringToBuffer(salt);
   const params = { name: "PBKDF2", hash, salt: saltBuffer, iterations };
   const derivation = await _crypto.subtle.deriveBits(params, importedKey, keyLength * 8);
@@ -184,23 +188,21 @@ var generateKey = async (_crypto, password, options) => {
     result.iv = randomBits(_crypto, algorithm.ivBits);
   return result;
 };
+var getEncryptParams = (algorithm, key, data) => {
+  return [
+    algorithm === "aes-128-ctr" ? { name: "AES-CTR", counter: key.iv, length: 128 } : { name: "AES-CBC", iv: key.iv },
+    key.key,
+    typeof data === "string" ? stringToBuffer(data) : data
+  ];
+};
 var encrypt = async (_crypto, password, options, data) => {
   const key = await generateKey(_crypto, password, options);
-  const textBuffer = stringToBuffer(data);
-  const encrypted = await _crypto.subtle.encrypt(
-    { name: algorithms[options.algorithm].name, iv: key.iv },
-    key.key,
-    textBuffer
-  );
+  const encrypted = await _crypto.subtle.encrypt(...getEncryptParams(options.algorithm, key, data));
   return { encrypted: new Uint8Array(encrypted), key };
 };
 var decrypt = async (_crypto, password, options, data) => {
   const key = await generateKey(_crypto, password, options);
-  const decrypted = await _crypto.subtle.decrypt(
-    { name: algorithms[options.algorithm].name, iv: key.iv },
-    key.key,
-    typeof data === "string" ? stringToBuffer(data) : data
-  );
+  const decrypted = await _crypto.subtle.decrypt(...getEncryptParams(options.algorithm, key, data));
   return bufferToString(new Uint8Array(decrypted));
 };
 var hmacWithPassword = async (_crypto, password, options, data) => {

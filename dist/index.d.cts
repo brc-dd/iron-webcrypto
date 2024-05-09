@@ -11,9 +11,22 @@ interface _SubtleCrypto {
 }
 
 /**
+ * Algorithm used for encryption and decryption.
+ */
+type EncryptionAlgorithm = 'aes-128-ctr' | 'aes-256-cbc';
+/**
+ * Algorithm used for integrity verification.
+ */
+type IntegrityAlgorithm = 'sha256';
+/**
+ * All algorithms supported by the library.
+ * @internal
+ */
+type _Algorithm = EncryptionAlgorithm | IntegrityAlgorithm;
+/**
  * seal() method options.
  */
-interface SealOptionsSub<Algorithm extends string = 'aes-128-ctr' | 'aes-256-cbc' | 'sha256'> {
+interface SealOptionsSub<Algorithm extends _Algorithm = _Algorithm> {
     /**
      * The length of the salt (random buffer used to ensure that two identical objects will generate a different encrypted result). Defaults to 256.
      */
@@ -38,11 +51,11 @@ interface SealOptions {
     /**
      * Encryption step options.
      */
-    encryption: SealOptionsSub<'aes-128-ctr' | 'aes-256-cbc'>;
+    encryption: SealOptionsSub<EncryptionAlgorithm>;
     /**
      * Integrity step options.
      */
-    integrity: SealOptionsSub<'sha256'>;
+    integrity: SealOptionsSub<IntegrityAlgorithm>;
     /**
      * Sealed object lifetime in milliseconds where 0 means forever. Defaults to 0.
      */
@@ -63,7 +76,7 @@ type Password = Uint8Array | string;
 /**
  * generateKey() method options.
  */
-type GenerateKeyOptions = Pick<SealOptionsSub, 'algorithm' | 'iterations' | 'minPasswordlength'> & {
+type GenerateKeyOptions<Algorithm extends _Algorithm = _Algorithm> = Pick<SealOptionsSub<Algorithm>, 'algorithm' | 'iterations' | 'minPasswordlength'> & {
     saltBits?: number | undefined;
     salt?: string | undefined;
     iv?: Uint8Array | undefined;
@@ -199,7 +212,7 @@ declare const generateKey: (_crypto: _Crypto, password: Password, options: Gener
  * @param data String to encrypt
  * @returns An object with keys: encrypted, key
  */
-declare const encrypt: (_crypto: _Crypto, password: Password, options: GenerateKeyOptions, data: string) => Promise<{
+declare const encrypt: (_crypto: _Crypto, password: Password, options: GenerateKeyOptions<EncryptionAlgorithm>, data: string) => Promise<{
     encrypted: Uint8Array;
     key: Key;
 }>;
@@ -211,7 +224,7 @@ declare const encrypt: (_crypto: _Crypto, password: Password, options: GenerateK
  * @param data Buffer to decrypt
  * @returns Decrypted string
  */
-declare const decrypt: (_crypto: _Crypto, password: Password, options: GenerateKeyOptions, data: Uint8Array | string) => Promise<string>;
+declare const decrypt: (_crypto: _Crypto, password: Password, options: GenerateKeyOptions<EncryptionAlgorithm>, data: Uint8Array | string) => Promise<string>;
 /**
  * Calculates a HMAC digest.
  * @param _crypto Custom WebCrypto implementation
@@ -220,7 +233,7 @@ declare const decrypt: (_crypto: _Crypto, password: Password, options: GenerateK
  * @param data String to calculate the HMAC over
  * @returns An object with keys: digest, salt
  */
-declare const hmacWithPassword: (_crypto: _Crypto, password: Password, options: GenerateKeyOptions, data: string) => Promise<HMacResult>;
+declare const hmacWithPassword: (_crypto: _Crypto, password: Password, options: GenerateKeyOptions<IntegrityAlgorithm>, data: string) => Promise<HMacResult>;
 /**
  * Serializes, encrypts, and signs objects into an iron protocol string.
  * @param _crypto Custom WebCrypto implementation
@@ -240,4 +253,4 @@ declare const seal: (_crypto: _Crypto, object: unknown, password: RawPassword, o
  */
 declare const unseal: (_crypto: _Crypto, sealed: string, password: Password | password.Hash, options: SealOptions) => Promise<unknown>;
 
-export { type GenerateKeyOptions, type HMacResult, type Key, type Password, type RawPassword, type SealOptions, type SealOptionsSub, algorithms, base64urlDecode, base64urlEncode, bufferToString, clone, decrypt, defaults, encrypt, generateKey, hmacWithPassword, macFormatVersion, macPrefix, password, randomBits, seal, stringToBuffer, unseal };
+export { type EncryptionAlgorithm, type GenerateKeyOptions, type HMacResult, type IntegrityAlgorithm, type Key, type Password, type RawPassword, type SealOptions, type SealOptionsSub, type _Algorithm, algorithms, base64urlDecode, base64urlEncode, bufferToString, clone, decrypt, defaults, encrypt, generateKey, hmacWithPassword, macFormatVersion, macPrefix, password, randomBits, seal, stringToBuffer, unseal };

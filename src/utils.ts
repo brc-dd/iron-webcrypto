@@ -136,3 +136,5 @@ export const base64urlEncode = (_input: Uint8Array | string): string => {
 
   return str
 }
+
+/* eslint-enable */

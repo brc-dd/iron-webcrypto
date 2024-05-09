@@ -245,6 +245,15 @@ export const tests = ({
         deepEqual(unsealed, obj)
       })
 
+      it('unseals a aes-128-ctr ticket', async () => {
+        const ticket =
+          'Fe26.2**63c87cc87254b834dbb13cc62abc8713d1da035a9b38f54e5d5795135e217167*TpIsHHn-7txnl14Or7-D6A*HFGMGpcTRPUBSTQobuo27KOZ76MhVWgOsjA5SkFoy3vyqaHuixbd**3c8c403569a744a39c58adfb81e654f6860cb01f145488313e1895276e719f52*d5J1jY3WxP61klQza6q7zTqiYpjWPwocqHmjtDcSeq0'
+        const options = Iron.clone(Iron.defaults)
+        options.encryption.algorithm = 'aes-128-ctr'
+        const unsealed = await Iron.unseal(crypto, ticket, password, options)
+        deepEqual(unsealed, obj)
+      })
+
       it('returns an error when number of sealed components is wrong', async () => {
         const ticket =
           'x*Fe26.2**a6dc6339e5ea5dfe7a135631cf3b7dcf47ea38246369d45767c928ea81781694*D3DLEoi-Hn3c972TPpZXqw*mCBhmhHhRKk9KtBjwu3h-1lx1MHKkgloQPKRkQZxpnDwYnFkb3RqdVTQRcuhGf4M**ff2bf988aa0edf2b34c02d220a45c4a3c572dac6b995771ed20de58da919bfa5*HfWzyJlz_UP9odmXvUaVK1TtdDuOCaezr-TAg2GjBCU'
@@ -276,7 +285,9 @@ export const tests = ({
       it('returns an error when decryption fails', async () => {
         const macBaseString =
           'Fe26.2**a6dc6339e5ea5dfe7a135631cf3b7dcf47ea38246369d45767c928ea81781694*D3DLEoi-Hn3c972TPpZXqw*mCBhmhHhRKk9KtBjwu3h-1lx1MHKkgloQPKRkQZxpnDwYnFkb3RqdVTQRcuhGf4M??*'
-        const options: Iron.GenerateKeyOptions = Iron.clone(Iron.defaults).integrity
+        const options: Iron.GenerateKeyOptions<Iron.IntegrityAlgorithm> = Iron.clone(
+          Iron.defaults
+        ).integrity
         options.salt = 'ff2bf988aa0edf2b34c02d220a45c4a3c572dac6b995771ed20de58da919bfa5'
         const mac = await Iron.hmacWithPassword(crypto, password, options, macBaseString)
         const ticket = `${macBaseString}*${mac.salt}*${mac.digest}`
@@ -289,7 +300,9 @@ export const tests = ({
       it('returns an error when iv base64 decoding fails', async () => {
         const macBaseString =
           'Fe26.2**a6dc6339e5ea5dfe7a135631cf3b7dcf47ea38246369d45767c928ea81781694*D3DLEoi-Hn3c972TPpZXqw??*mCBhmhHhRKk9KtBjwu3h-1lx1MHKkgloQPKRkQZxpnDwYnFkb3RqdVTQRcuhGf4M*'
-        const options: Iron.GenerateKeyOptions = Iron.clone(Iron.defaults).integrity
+        const options: Iron.GenerateKeyOptions<Iron.IntegrityAlgorithm> = Iron.clone(
+          Iron.defaults
+        ).integrity
         options.salt = 'ff2bf988aa0edf2b34c02d220a45c4a3c572dac6b995771ed20de58da919bfa5'
         const mac = await Iron.hmacWithPassword(crypto, password, options, macBaseString)
         const ticket = `${macBaseString}*${mac.salt}*${mac.digest}`
@@ -327,7 +340,9 @@ export const tests = ({
       it('returns an error when expired', async () => {
         const macBaseString =
           'Fe26.2**a38dc7a7bf2f8ff650b103d8c669d76ad219527fbfff3d98e3b30bbecbe9bd3b*nTsatb7AQE1t0uMXDx-2aw*uIO5bRFTwEBlPC1Nd_hfSkZfqxkxuY1EO2Be_jJPNQCqFNumRBjQAl8WIKBW1beF*1380495854060'
-        const options: Iron.GenerateKeyOptions = Iron.clone(Iron.defaults).integrity
+        const options: Iron.GenerateKeyOptions<Iron.IntegrityAlgorithm> = Iron.clone(
+          Iron.defaults
+        ).integrity
         options.salt = 'e4fe33b6dc4c7ef5ad7907f015deb7b03723b03a54764aceeb2ab1235cc8dce3'
         const mac = await Iron.hmacWithPassword(crypto, password, options, macBaseString)
         const ticket = `${macBaseString}*${mac.salt}*${mac.digest}`
@@ -337,7 +352,9 @@ export const tests = ({
       it('returns an error when expiration NaN', async () => {
         const macBaseString =
           'Fe26.2**a38dc7a7bf2f8ff650b103d8c669d76ad219527fbfff3d98e3b30bbecbe9bd3b*nTsatb7AQE1t0uMXDx-2aw*uIO5bRFTwEBlPC1Nd_hfSkZfqxkxuY1EO2Be_jJPNQCqFNumRBjQAl8WIKBW1beF*a'
-        const options: Iron.GenerateKeyOptions = Iron.clone(Iron.defaults).integrity
+        const options: Iron.GenerateKeyOptions<Iron.IntegrityAlgorithm> = Iron.clone(
+          Iron.defaults
+        ).integrity
         options.salt = 'e4fe33b6dc4c7ef5ad7907f015deb7b03723b03a54764aceeb2ab1235cc8dce3'
         const mac = await Iron.hmacWithPassword(crypto, password, options, macBaseString)
         const ticket = `${macBaseString}*${mac.salt}*${mac.digest}`
