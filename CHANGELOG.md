@@ -1,5 +1,12 @@
 
 
+## [1.2.0](https://github.com/brc-dd/iron-webcrypto/compare/v1.1.1...v1.2.0) (2024-05-09)
+
+
+### Bug Fixes
+
+* broken aes-128-ctr mode ([8356294](https://github.com/brc-dd/iron-webcrypto/commit/83562949acf36f80266af995fe151ca23db90254))
+
 ## [1.1.1](https://github.com/brc-dd/iron-webcrypto/compare/v1.1.0...v1.1.1) (2024-04-20)
 
 
