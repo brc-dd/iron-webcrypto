@@ -1,5 +1,12 @@
 
 
+## [1.2.1](https://github.com/brc-dd/iron-webcrypto/compare/v1.2.0...v1.2.1) (2024-05-09)
+
+
+### Bug Fixes
+
+* **jsr:** remove slow types ([3901f3a](https://github.com/brc-dd/iron-webcrypto/commit/3901f3aaa42e80b5278abf3aa61b2b86ad6b63cf))
+
 ## [1.2.0](https://github.com/brc-dd/iron-webcrypto/compare/v1.1.1...v1.2.0) (2024-05-09)
 
 
