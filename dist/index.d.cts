@@ -19,7 +19,6 @@ type EncryptionAlgorithm = 'aes-128-ctr' | 'aes-256-cbc';
  */
 type IntegrityAlgorithm = 'sha256';
 /**
- * All algorithms supported by the library.
  * @internal
  */
 type _Algorithm = EncryptionAlgorithm | IntegrityAlgorithm;

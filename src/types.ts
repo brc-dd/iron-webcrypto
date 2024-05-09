@@ -9,7 +9,6 @@ export type EncryptionAlgorithm = 'aes-128-ctr' | 'aes-256-cbc'
 export type IntegrityAlgorithm = 'sha256'
 
 /**
- * All algorithms supported by the library.
  * @internal
  */
 export type _Algorithm = EncryptionAlgorithm | IntegrityAlgorithm

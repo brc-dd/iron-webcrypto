@@ -8,7 +8,6 @@ import type {
   Password,
   RawPassword,
   SealOptions,
-  _Algorithm,
   password
 } from './types.js'
 import { base64urlDecode, base64urlEncode, bufferToString, stringToBuffer } from './utils.js'
@@ -46,7 +45,7 @@ export const algorithms = {
   'aes-128-ctr': { keyBits: 128, ivBits: 128, name: 'AES-CTR' },
   'aes-256-cbc': { keyBits: 256, ivBits: 128, name: 'AES-CBC' },
   sha256: { keyBits: 256, name: 'SHA-256' }
-} as const satisfies Record<_Algorithm, { keyBits: number; ivBits?: number; name: string }>
+} as const
 
 /**
  * MAC normalization format version.
