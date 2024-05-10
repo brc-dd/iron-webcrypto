@@ -1,4 +1,4 @@
-import { assertEquals, AssertionError } from 'https://deno.land/std@0.219.1/assert/mod.ts'
+import { AssertionError, assertEquals } from 'https://deno.land/std@0.219.1/assert/mod.ts'
 import { stripAnsiCode } from 'https://deno.land/std@0.219.1/fmt/colors.ts'
 import { describe, it } from 'https://deno.land/std@0.219.1/testing/bdd.ts'
 import { tests } from '../index.ts'
