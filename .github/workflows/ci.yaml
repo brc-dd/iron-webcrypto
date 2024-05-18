@@ -47,8 +47,8 @@ jobs:
       - run: pnpm lint && [ -z "$(git status --porcelain)" ]
       - run: pnpm test:deno && pnpm test:bun
 
-  devskim:
-    name: devskim
+  codeql-others:
+    name: codeql (devskim, snyk)
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -56,13 +56,27 @@ jobs:
       security-events: write
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
       - uses: microsoft/devskim-action@v1
         with:
           directory-to-scan: src
-      - run: |
-          jq '(.. | select(type == "object" and .artifactLocation and .artifactLocation.uri) | .artifactLocation.uri) |= "src/" + .' devskim-results.sarif > devskim-results.sarif.tmp
-          mv devskim-results.sarif.tmp devskim-results.sarif
+      - run: node scripts/normalize-sarif.js devskim-results.sarif
       - uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: devskim-results.sarif
           category: devskim
+
+      - run: pnpm install -g snyk
+      - run: snyk auth ${{ secrets.SNYK_TOKEN }}
+      - run: snyk monitor --all-projects
+      - run: snyk code test $(realpath src) --sarif > snyk-results.sarif
+      - run: node scripts/normalize-sarif.js snyk-results.sarif
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: snyk-results.sarif
+          category: snyk
