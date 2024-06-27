@@ -1,6 +1,6 @@
-import { defineConfig } from 'tsup'
+import type { Options } from 'tsup'
 
-export default defineConfig({
+const config: Options = {
   entry: ['src/index.ts'],
   target: 'node10',
   format: ['esm', 'cjs'],
@@ -11,4 +11,6 @@ export default defineConfig({
   esbuildOptions(options) {
     options.platform = 'browser'
   }
-})
+}
+
+export default config

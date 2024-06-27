@@ -2,9 +2,11 @@
   "compilerOptions": {
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
+    "declaration": true,
     "esModuleInterop": true,
     "exactOptionalPropertyTypes": true,
     "forceConsistentCasingInFileNames": true,
+    "isolatedDeclarations": true,
     "isolatedModules": true,
     "jsx": "preserve",
     "lib": ["esnext", "dom"],

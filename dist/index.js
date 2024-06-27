@@ -112,8 +112,7 @@ var randomBytes = (_crypto, size) => {
   return bytes;
 };
 var randomBits = (_crypto, bits) => {
-  if (bits < 1)
-    throw new Error("Invalid random bits count");
+  if (bits < 1) throw new Error("Invalid random bits count");
   const bytes = Math.ceil(bits / 8);
   return randomBytes(_crypto, bytes);
 };
@@ -133,12 +132,9 @@ var pbkdf2 = async (_crypto, password, salt, iterations, keyLength, hash) => {
 };
 var generateKey = async (_crypto, password, options) => {
   var _a;
-  if (!(password == null ? void 0 : password.length))
-    throw new Error("Empty password");
-  if (options == null || typeof options !== "object")
-    throw new Error("Bad options");
-  if (!(options.algorithm in algorithms))
-    throw new Error(`Unknown algorithm: ${options.algorithm}`);
+  if (!(password == null ? void 0 : password.length)) throw new Error("Empty password");
+  if (options == null || typeof options !== "object") throw new Error("Bad options");
+  if (!(options.algorithm in algorithms)) throw new Error(`Unknown algorithm: ${options.algorithm}`);
   const algorithm = algorithms[options.algorithm];
   const result = {};
   const hmac = (_a = options.hmac) != null ? _a : false;
@@ -152,8 +148,7 @@ var generateKey = async (_crypto, password, options) => {
     let { salt = "" } = options;
     if (!salt) {
       const { saltBits = 0 } = options;
-      if (!saltBits)
-        throw new Error("Missing salt and saltBits options");
+      if (!saltBits) throw new Error("Missing salt and saltBits options");
       const randomSalt = randomBits(_crypto, saltBits);
       salt = [...new Uint8Array(randomSalt)].map((x) => x.toString(16).padStart(2, "0")).join("");
     }
@@ -175,15 +170,12 @@ var generateKey = async (_crypto, password, options) => {
     result.key = importedEncryptionKey;
     result.salt = salt;
   } else {
-    if (password.length < algorithm.keyBits / 8)
-      throw new Error("Key buffer (password) too small");
+    if (password.length < algorithm.keyBits / 8) throw new Error("Key buffer (password) too small");
     result.key = await _crypto.subtle.importKey("raw", password, id, false, usage);
     result.salt = "";
   }
-  if (options.iv)
-    result.iv = options.iv;
-  else if ("ivBits" in algorithm)
-    result.iv = randomBits(_crypto, algorithm.ivBits);
+  if (options.iv) result.iv = options.iv;
+  else if ("ivBits" in algorithm) result.iv = randomBits(_crypto, algorithm.ivBits);
   return result;
 };
 var getEncryptParams = (algorithm, key, data) => {
@@ -218,15 +210,13 @@ var normalizePassword = (password) => {
   return { id: password.id, encryption: password.encryption, integrity: password.integrity };
 };
 var seal = async (_crypto, object, password, options) => {
-  if (!password)
-    throw new Error("Empty password");
+  if (!password) throw new Error("Empty password");
   const opts = clone(options);
   const now = Date.now() + (opts.localtimeOffsetMsec || 0);
   const objectString = JSON.stringify(object);
   const pass = normalizePassword(password);
   const { id = "", encryption, integrity } = pass;
-  if (id && !/^\w+$/.test(id))
-    throw new Error("Invalid password id");
+  if (id && !/^\w+$/.test(id)) throw new Error("Invalid password id");
   const { encrypted, key } = await encrypt(_crypto, encryption, opts.encryption, objectString);
   const encryptedB64 = base64urlEncode(new Uint8Array(encrypted));
   const iv = base64urlEncode(key.iv);
@@ -238,20 +228,16 @@ var seal = async (_crypto, object, password, options) => {
 };
 var fixedTimeComparison = (a, b) => {
   let mismatch = a.length === b.length ? 0 : 1;
-  if (mismatch)
-    b = a;
-  for (let i = 0; i < a.length; i += 1)
-    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  if (mismatch) b = a;
+  for (let i = 0; i < a.length; i += 1) mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return mismatch === 0;
 };
 var unseal = async (_crypto, sealed, password, options) => {
-  if (!password)
-    throw new Error("Empty password");
+  if (!password) throw new Error("Empty password");
   const opts = clone(options);
   const now = Date.now() + (opts.localtimeOffsetMsec || 0);
   const parts = sealed.split("*");
-  if (parts.length !== 8)
-    throw new Error("Incorrect number of sealed components");
+  if (parts.length !== 8) throw new Error("Incorrect number of sealed components");
   const prefix = parts[0];
   let passwordId = parts[1];
   const encryptionSalt = parts[2];
@@ -261,19 +247,15 @@ var unseal = async (_crypto, sealed, password, options) => {
   const hmacSalt = parts[6];
   const hmac = parts[7];
   const macBaseString = `${prefix}*${passwordId}*${encryptionSalt}*${encryptionIv}*${encryptedB64}*${expiration}`;
-  if (macPrefix !== prefix)
-    throw new Error("Wrong mac prefix");
+  if (macPrefix !== prefix) throw new Error("Wrong mac prefix");
   if (expiration) {
-    if (!/^\d+$/.test(expiration))
-      throw new Error("Invalid expiration");
+    if (!/^\d+$/.test(expiration)) throw new Error("Invalid expiration");
     const exp = Number.parseInt(expiration, 10);
-    if (exp <= now - opts.timestampSkewSec * 1e3)
-      throw new Error("Expired seal");
+    if (exp <= now - opts.timestampSkewSec * 1e3) throw new Error("Expired seal");
   }
   let pass = "";
   passwordId = passwordId || "default";
-  if (typeof password === "string" || password instanceof Uint8Array)
-    pass = password;
+  if (typeof password === "string" || password instanceof Uint8Array) pass = password;
   else if (passwordId in password) {
     pass = password[passwordId];
   } else {
@@ -283,15 +265,13 @@ var unseal = async (_crypto, sealed, password, options) => {
   const macOptions = opts.integrity;
   macOptions.salt = hmacSalt;
   const mac = await hmacWithPassword(_crypto, pass.integrity, macOptions, macBaseString);
-  if (!fixedTimeComparison(mac.digest, hmac))
-    throw new Error("Bad hmac value");
+  if (!fixedTimeComparison(mac.digest, hmac)) throw new Error("Bad hmac value");
   const encrypted = base64urlDecode(encryptedB64);
   const decryptOptions = opts.encryption;
   decryptOptions.salt = encryptionSalt;
   decryptOptions.iv = base64urlDecode(encryptionIv);
   const decrypted = await decrypt(_crypto, pass.encryption, decryptOptions, encrypted);
-  if (decrypted)
-    return JSON.parse(decrypted);
+  if (decrypted) return JSON.parse(decrypted);
   return null;
 };
 

@@ -25,7 +25,7 @@ export const tests = ({
     // eslint-disable-next-line security/detect-non-literal-regexp
     const re = new RegExp(
       (typeof msgIncludes === 'string' ? [msgIncludes] : msgIncludes)
-        .map((s) => s.replace(/[$()*+.?[\\\]^{|}]/g, '\\$&'))
+        .map((s) => s.replace(/[$()*+.?[\\\]^{|}]/g, String.raw`\$&`))
         .join('|')
     )
     return origRejects(fn, re)
