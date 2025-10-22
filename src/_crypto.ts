@@ -7,7 +7,7 @@ interface _SubtleCrypto {
   decrypt: (
     algorithm: AesCbcParams | AesCtrParams | AesGcmParams | AlgorithmIdentifier | RsaOaepParams,
     key: CryptoKey,
-    data: Uint8Array
+    data: BufferSource
   ) => Promise<ArrayBuffer>
   deriveBits: (
     algorithm: AlgorithmIdentifier | EcdhKeyDeriveParams | HkdfParams | Pbkdf2Params,
@@ -17,11 +17,11 @@ interface _SubtleCrypto {
   encrypt: (
     algorithm: AesCbcParams | AesCtrParams | AesGcmParams | AlgorithmIdentifier | RsaOaepParams,
     key: CryptoKey,
-    data: Uint8Array
+    data: BufferSource
   ) => Promise<ArrayBuffer>
   importKey: (
     format: Exclude<KeyFormat, 'jwk'>,
-    keyData: ArrayBuffer | Uint8Array,
+    keyData: BufferSource,
     algorithm:
       | AesKeyAlgorithm
       | AlgorithmIdentifier
@@ -34,6 +34,6 @@ interface _SubtleCrypto {
   sign: (
     algorithm: AlgorithmIdentifier | EcdsaParams | RsaPssParams,
     key: CryptoKey,
-    data: Uint8Array
+    data: BufferSource
   ) => Promise<ArrayBuffer>
 }
