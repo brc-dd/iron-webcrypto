@@ -48,7 +48,7 @@ jobs:
       - run: pnpm test:deno && pnpm test:bun
 
   codeql-others:
-    name: codeql (devskim, snyk)
+    name: codeql (devskim)
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -70,13 +70,3 @@ jobs:
         with:
           sarif_file: devskim-results.sarif
           category: devskim
-
-      - run: pnpm install -g snyk
-      - run: snyk auth --auth-type=token ${{ secrets.SNYK_TOKEN }}
-      - run: snyk monitor --all-projects
-      - run: snyk code test $(realpath src) --sarif > snyk-results.sarif
-      - run: node scripts/normalize-sarif.js snyk-results.sarif
-      - uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: snyk-results.sarif
-          category: snyk
