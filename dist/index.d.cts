@@ -1,6 +1,6 @@
 interface _Crypto {
     readonly subtle: _SubtleCrypto;
-    getRandomValues: (array: BufferSource) => BufferSource;
+    getRandomValues: (array: ArrayBufferView) => ArrayBufferView;
 }
 interface _SubtleCrypto {
     decrypt: (algorithm: AesCbcParams | AesCtrParams | AesGcmParams | AlgorithmIdentifier | RsaOaepParams, key: CryptoKey, data: BufferSource) => Promise<ArrayBuffer>;
