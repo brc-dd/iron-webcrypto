@@ -1,6 +1,6 @@
 export interface _Crypto {
   readonly subtle: _SubtleCrypto
-  getRandomValues: (array: Uint8Array) => Uint8Array
+  getRandomValues: (array: BufferSource) => BufferSource
 }
 
 interface _SubtleCrypto {
