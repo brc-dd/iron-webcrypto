@@ -1,6 +1,1 @@
-node_modules
 dist
-*.log
-*.tgz
-.dccache
-*.sarif

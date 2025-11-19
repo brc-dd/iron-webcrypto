@@ -14,9 +14,18 @@ export type IntegrityAlgorithm = 'sha256'
 export type _Algorithm = EncryptionAlgorithm | IntegrityAlgorithm
 
 /**
+ * Configuration of each supported algorithm.
+ */
+export type Algorithms = {
+  readonly [Algorithm in EncryptionAlgorithm | IntegrityAlgorithm]: Algorithm extends EncryptionAlgorithm
+    ? Readonly<{ keyBits: number; ivBits: number; name: string }>
+    : Readonly<{ keyBits: number; ivBits: undefined; name: string }>
+}
+
+/**
  * seal() method options.
  */
-export interface SealOptionsSub<Algorithm extends _Algorithm = _Algorithm> {
+export type SealOptionsSub<Algorithm extends _Algorithm = _Algorithm> = Readonly<{
   /**
    * The length of the salt (random buffer used to ensure that two identical objects will generate a different encrypted result). Defaults to 256.
    */
@@ -36,12 +45,12 @@ export interface SealOptionsSub<Algorithm extends _Algorithm = _Algorithm> {
    * Minimum password size. Defaults to 32.
    */
   minPasswordlength: number
-}
+}>
 
 /**
  * Options for customizing the key derivation algorithm used to generate encryption and integrity verification keys as well as the algorithms and salt sizes used.
  */
-export interface SealOptions {
+export type SealOptions = Readonly<{
   /**
    * Encryption step options.
    */
@@ -66,49 +75,64 @@ export interface SealOptions {
    * Local clock time offset, expressed in number of milliseconds (positive or negative). Defaults to 0.
    */
   localtimeOffsetMsec: number
+
+  /**
+   * Custom encoder for serializing data before encryption. Defaults to lossless JSON stringify. \
+   * To revert to v1 behavior, use `JSON.stringify`. \
+   * For complex data types, you can use cbor or msgpack encoders.
+   */
+  encode?: (data: unknown) => string
+
+  /**
+   * Custom decoder for deserializing data after decryption. Defaults to `JSON.parse`. \
+   * To align with `@hapi/iron`'s behavior, use `Bourne.parse`.
+   */
+  decode?: (data: string) => unknown
+}>
+
+/**
+ * generateKey() method options.
+ */
+export type GenerateKeyOptions<Algorithm extends _Algorithm = _Algorithm> =
+  & Pick<SealOptionsSub<Algorithm>, 'algorithm' | 'iterations' | 'minPasswordlength'>
+  & {
+    saltBits?: number | undefined
+    salt?: string | undefined
+    iv?: Uint8Array<ArrayBuffer> | undefined
+  }
+
+/**
+ * Generated internal key object.
+ */
+export type Key<Algorithm extends _Algorithm = _Algorithm> = {
+  key: CryptoKey
+  salt: string
+  iv: Algorithm extends EncryptionAlgorithm ? Uint8Array<ArrayBuffer> : undefined
 }
+
+/**
+ * Generated HMAC internal results.
+ */
+export type HmacResult = {
+  digest: string
+  salt: string
+}
+
+/**
+ * @deprecated Use {@link HmacResult} instead.
+ */
+export type HMacResult = HmacResult
 
 /**
  * Password secret string or buffer.
  */
 export type Password = Uint8Array | string
 
-/**
- * generateKey() method options.
- */
-export type GenerateKeyOptions<Algorithm extends _Algorithm = _Algorithm> = Pick<
-  SealOptionsSub<Algorithm>,
-  'algorithm' | 'iterations' | 'minPasswordlength'
-> & {
-  saltBits?: number | undefined
-  salt?: string | undefined
-  iv?: Uint8Array | undefined
-  hmac?: boolean | undefined
-}
-
-/**
- * Generated internal key object.
- */
-export interface Key {
-  key: CryptoKey
-  salt: string
-  iv: Uint8Array
-}
-
-/**
- * Generated HMAC internal results.
- */
-export interface HMacResult {
-  digest: string
-  salt: string
-}
-
-// eslint-disable-next-line @typescript-eslint/no-namespace
 export declare namespace password {
   /**
    * Secret object with optional id.
    */
-  interface Secret {
+  type Secret = {
     id?: string | undefined
     secret: Password
   }
@@ -116,7 +140,7 @@ export declare namespace password {
   /**
    * Secret object with optional id and specified password for each encryption and integrity.
    */
-  interface Specific {
+  type Specific = {
     id?: string | undefined
     encryption: Password
     integrity: Password
@@ -125,10 +149,7 @@ export declare namespace password {
   /**
    * Key-value pairs hash of password id to value.
    */
-  type Hash = Record<string, Password | Secret | Specific>
+  type Hash = {
+    [id: string]: Password | Secret | Specific
+  }
 }
-
-/**
- * @internal
- */
-export type RawPassword = Password | password.Secret | password.Specific

@@ -1,0 +1,21 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    uses: brc-dd/cross-bdd/.github/workflows/test.reusable.yaml@main
+    with:
+      deno_versions: stable
+      bun_versions: latest
+      node_versions: 20 22 24 latest
