@@ -245,7 +245,7 @@ describe('Iron', () => {
       const ticket = `${macBaseString}*${mac.salt}*${mac.digest}`
       await assertRejects(
         Iron.unseal(ticket, password, Iron.defaults),
-        'Found a character that cannot be part of a valid base64 string.',
+        ['Found a character that cannot be part of a valid base64 string.', 'Invalid character'],
       )
     })
 
@@ -258,7 +258,7 @@ describe('Iron', () => {
       const ticket = `${macBaseString}*${mac.salt}*${mac.digest}`
       await assertRejects(
         Iron.unseal(ticket, password, Iron.defaults),
-        'Found a character that cannot be part of a valid base64 string.',
+        ['Found a character that cannot be part of a valid base64 string.', 'Invalid character'],
       )
     })
 
