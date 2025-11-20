@@ -22,7 +22,11 @@ jobs:
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
-      - run: npm install -g npm@latest
       - uses: denoland/setup-deno@v2
-      - run: deno task build
-      - run: cd dist && npm publish
+      - run: |
+          deno task build
+          cd dist
+          npm install -g npm@latest
+          npm publish
+          deno install
+          deno publish
