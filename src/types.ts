@@ -132,24 +132,24 @@ export declare namespace password {
   /**
    * Secret object with optional id.
    */
-  type Secret = {
+  type Secret = Readonly<{
     id?: string | undefined
     secret: Password
-  }
+  }>
 
   /**
    * Secret object with optional id and specified password for each encryption and integrity.
    */
-  type Specific = {
+  type Specific = Readonly<{
     id?: string | undefined
     encryption: Password
     integrity: Password
-  }
+  }>
 
   /**
    * Key-value pairs hash of password id to value.
    */
-  type Hash = {
+  type Hash = Readonly<{
     [id: string]: Password | Secret | Specific
-  }
+  }>
 }
