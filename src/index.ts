@@ -17,13 +17,13 @@ export type * from './types.ts'
 type TupleOf<L extends number, T, R extends unknown[] = []> = //
   R['length'] extends L ? R : TupleOf<L, T, [T, ...R]>
 
-const enc = new TextEncoder()
-const dec = new TextDecoder()
+const enc = /* @__PURE__ */ new TextEncoder()
+const dec = /* @__PURE__ */ new TextDecoder()
 
-const jsBase64Enabled = //
+const jsBase64Enabled = /* @__PURE__ */ (() =>
   typeof Uint8Array.fromBase64 === 'function' &&
   typeof Uint8Array.prototype.toBase64 === 'function' &&
-  typeof Uint8Array.prototype.toHex === 'function'
+  typeof Uint8Array.prototype.toHex === 'function')()
 
 function b64ToU8(str: string): Uint8Array<ArrayBuffer> {
   if (jsBase64Enabled) return Uint8Array.fromBase64(str, { alphabet: 'base64url' })
