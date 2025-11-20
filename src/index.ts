@@ -71,6 +71,8 @@ type Mutable<T> = { -readonly [K in keyof T]: T[K] }
  * Clones the options object.
  * @param options The options to clone.
  * @returns A mutable copy of the options.
+ *
+ * @internal
  */
 export function clone(options: SealOptions): Mutable<SealOptions> & {
   encryption: Mutable<SealOptions['encryption']>
