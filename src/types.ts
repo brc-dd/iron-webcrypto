@@ -16,11 +16,13 @@ export type _Algorithm = EncryptionAlgorithm | IntegrityAlgorithm
 /**
  * Configuration of each supported algorithm.
  */
-export type Algorithms = {
-  readonly [Algorithm in EncryptionAlgorithm | IntegrityAlgorithm]: Algorithm extends EncryptionAlgorithm
-    ? Readonly<{ keyBits: number; ivBits: number; name: string }>
-    : Readonly<{ keyBits: number; ivBits: undefined; name: string }>
-}
+export type Algorithms = Readonly<
+  {
+    [Algorithm in EncryptionAlgorithm | IntegrityAlgorithm]: Algorithm extends EncryptionAlgorithm
+      ? Readonly<{ keyBits: number; ivBits: number; name: string }>
+      : Readonly<{ keyBits: number; ivBits: undefined; name: string }>
+  }
+>
 
 /**
  * seal() method options.
@@ -104,19 +106,19 @@ export type GenerateKeyOptions<Algorithm extends _Algorithm = _Algorithm> =
 /**
  * Generated internal key object.
  */
-export type Key<Algorithm extends _Algorithm = _Algorithm> = {
+export type Key<Algorithm extends _Algorithm = _Algorithm> = Readonly<{
   key: CryptoKey
   salt: string
   iv: Algorithm extends EncryptionAlgorithm ? Uint8Array<ArrayBuffer> : undefined
-}
+}>
 
 /**
  * Generated HMAC internal results.
  */
-export type HmacResult = {
+export type HmacResult = Readonly<{
   digest: string
   salt: string
-}
+}>
 
 /**
  * @deprecated Use {@link HmacResult} instead.
