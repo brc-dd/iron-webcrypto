@@ -155,15 +155,9 @@ export async function generateKey(
       salt = u8ToHex(randomBits(options.saltBits))
     }
 
-    const baseKey = await crypto.subtle.importKey('raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveKey'])
-
-    const derivedKey = await crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt: enc.encode(salt), iterations: options.iterations, hash: 'SHA-1' },
-      baseKey,
-      id,
-      false,
-      usages,
-    )
+    const baseKey = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey'])
+    const algorithm = { name: 'PBKDF2', salt: enc.encode(salt), iterations: options.iterations, hash: 'SHA-1' }
+    const derivedKey = await crypto.subtle.deriveKey(algorithm, baseKey, id, false, usages)
 
     return { key: derivedKey, iv, salt }
   }
