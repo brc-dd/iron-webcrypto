@@ -100,6 +100,59 @@ Additional seal options:
 
 Most functions throw when inputs are missing, too short, or malformed (e.g., unknown algorithms, invalid Base64, expired token, or unserializable data). Catch and handle these to swallow errors or surface meaningful responses to callers.
 
+## Advanced Usage
+
+### Custom Serialization
+
+Swap the default JSON serializer for MessagePack, CBOR, Protobuf, or similar to cover broader data shapes when sealing and unsealing.
+
+```ts
+import msgpack from '@msgpack/msgpack'
+import { base64ToUint8Array, uint8ArrayToBase64 } from 'uint8array-extras'
+import * as Iron from 'iron-webcrypto'
+
+const options: Iron.SealOptions = {
+  ...Iron.defaults,
+  encode: (obj) => uint8ArrayToBase64(msgpack.encode(obj)),
+  decode: (str) => msgpack.decode(base64ToUint8Array(str)),
+}
+
+const sealed = await Iron.seal(payload, password, options)
+const unsealed = await Iron.unseal(sealed, password, options)
+```
+
+### Application-Level Versioning
+
+Manage evolving data formats and encryption parameters by embedding version prefixes in the sealed token.
+
+```ts
+import * as Iron from 'iron-webcrypto'
+
+const options = {
+  v1: Iron.defaults, // drop older versions once their TTL window closes
+  v2: {
+    ...Iron.defaults,
+    encryption: { ...Iron.defaults.encryption, algorithm: 'aes-128-ctr', saltBits: 128, iterations: 1000 },
+    integrity: { ...Iron.defaults.integrity, iterations: 1000 },
+  },
+} as const
+
+async function seal(payload: unknown): Promise<string> {
+  const sealed = await Iron.seal(payload, password, options.v2) // use latest version to seal new data
+  return `v2.${sealed}`
+}
+
+async function unseal(sealed: string): Promise<unknown> {
+  if (sealed.startsWith('v2.')) {
+    return Iron.unseal(sealed.slice(3), password, options.v2)
+  }
+  if (sealed.startsWith('v1.')) {
+    return Iron.unseal(sealed.slice(3), password, options.v1)
+  }
+  throw new Error('Unknown version') // or choose a default behavior for legacy (unversioned) tokens
+}
+```
+
 ## Migration
 
 ### From `@hapi/iron`

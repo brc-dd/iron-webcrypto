@@ -47,15 +47,15 @@ function u8ToHex(arr: Uint8Array | ArrayBuffer): string {
  */
 export const defaults: SealOptions = /* @__PURE__ */ Object.freeze({
   encryption: /* @__PURE__ */ Object.freeze({
-    saltBits: 256,
     algorithm: 'aes-256-cbc',
+    saltBits: 256,
     iterations: 1,
     minPasswordlength: 32,
   }),
 
   integrity: /* @__PURE__ */ Object.freeze({
-    saltBits: 256,
     algorithm: 'sha256',
+    saltBits: 256,
     iterations: 1,
     minPasswordlength: 32,
   }),
