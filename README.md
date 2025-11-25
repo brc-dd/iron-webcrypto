@@ -180,11 +180,26 @@ Note that implementation differences may result in variations in error messages 
 
 ### Algorithm Strengths
 
-- The cryptographic primitives used in the Iron algorithm have weakened over time. While AES-256-CBC and HMAC-SHA256 remain secure for most use cases, periodically review your security requirements, especially for sensitive data.
+The cryptographic primitives used in the Iron algorithm have weakened over time. While AES-256-CBC and HMAC-SHA256 remain secure for most use cases, periodically review your security requirements, especially for sensitive data.
 
-- PBKDF2 with a single iteration is suboptimal for password hashing but was deemed acceptable for key derivation in this context. Mitigate this risk by using strong, high-entropy passwords. `openssl rand -base64 24` is a handy way to generate one locally.
+PBKDF2 with a single iteration is suboptimal for password hashing but was deemed acceptable for key derivation in this context. Mitigate this risk by using strong, high-entropy passwords. `openssl rand -base64 24` is a handy way to generate one locally.
 
-- Modern applications should consider stronger algorithms like AES-GCM that provide Authenticated Encryption with Associated Data (AEAD). Future releases may explore using it with appropriate key management strategies like HKDF-derived per-payload keys or envelope encryption schemes.
+Modern applications should consider stronger algorithms like AES-GCM that provide Authenticated Encryption with Associated Data (AEAD). Future releases may explore using it with appropriate key management strategies like HKDF-derived per-payload keys or envelope encryption schemes.
+
+### Password Rotation
+
+Assigning the password used an `id` allows for password rotation to improve the security of your deployment. Passwords should be rotated over time to reduce the risk of compromised security. When providing a password id, the id is included with the iron protocol string and it must match the id used to unseal.
+
+It is recommended to combine password id with the `ttl` option to generate iron protocol strings of limited time validity which also allow for rotating passwords without the need to keep all previous passwords around (only the number of passwords used within the ttl window).
+
+### Threat Model
+
+This library is designed to provide confidentiality and integrity for data stored in untrusted environments, such as client-side storage or third-party services. However, it does not protect against all possible threats. Consider the following when using this library:
+
+- **Key Management**: Ensure that encryption keys are stored securely and are not exposed to unauthorized parties. Compromise of the key compromises all data sealed with it.
+- **Replay Attacks**: While the library supports TTL for tokens, it does not inherently prevent replay attacks. Implement additional measures if necessary.
+- **Side-Channel Attacks**: Be aware of potential side-channel attacks that could leak information about the sealed data or keys through timing or other observable behaviors.
+- **Data Sensitivity**: Evaluate the sensitivity of the data being sealed and ensure that the chosen algorithms and key sizes are appropriate for the level of security required.
 
 ## Credits
 
