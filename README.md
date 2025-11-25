@@ -42,7 +42,7 @@ import * as Iron from '@brc-dd/iron'
 
 </details>
 
-## Quick start
+## Quick Start
 
 ```ts
 import * as Iron from 'iron-webcrypto'
@@ -58,14 +58,14 @@ const unsealed = await Iron.unseal(sealed, password, Iron.defaults)
 // => { userId: 123, scope: ['user'] }
 ```
 
-- Check out [unjs/h3](https://github.com/unjs/h3), [vvo/iron-session](https://github.com/vvo/iron-session), and [others](https://github.com/search?q=/from+%5B%22'%5D((npm:%7Cjsr:)?(iron-webcrypto%7C@brc-dd%5C/iron)%7Chttps:%5C/%5C/(deno%5C.land%5C/x%5C/iron%7Cesm%5C.sh%5C/(iron-webcrypto%7Cjsr%5C/@brc-dd%5C/iron)))/+(language:TypeScript+OR+language:JavaScript)+NOT+is:fork+&type=code) to see this module in use!
-- Use `.env` or a secrets manager in production to store your secret key(s) securely.
+- Check out [unjs/h3](https://github.com/unjs/h3), [vvo/iron-session](https://github.com/vvo/iron-session), and [other examples](https://github.com/search?q=/from+%5B%22'%5D((npm:%7Cjsr:)?(iron-webcrypto%7C@brc-dd%5C/iron)%7Chttps:%5C/%5C/(deno%5C.land%5C/x%5C/iron%7Cesm%5C.sh%5C/(iron-webcrypto%7Cjsr%5C/@brc-dd%5C/iron)))/+(language:TypeScript+OR+language:JavaScript)+NOT+is:fork+&type=code) to see this module in use.
+- Store secrets in environment variables or a secrets manager; avoid hardcoding keys.
 - While this module utilizes WebCrypto and technically functions in a browser environment, it is not recommended for client-side code due to the security risks inherent in exposing encryption secrets to the client.
 
 ## API
 
-Full docs: [jsDocs reference](https://www.jsdocs.io/package/iron-webcrypto)\
-Concepts and background: [@hapi/iron docs](https://hapi.dev/module/iron/)
+Reference: [jsDocs](https://www.jsdocs.io/package/iron-webcrypto)\
+Background: [@hapi/iron docs](https://hapi.dev/module/iron/)
 
 - `defaults`: Commonly used `SealOptions` (AES-256-CBC + SHA-256, 256-bit salts, no TTL).
 - `seal(object, password, options)`: Serializes, encrypts, and signs data into the iron token string.
@@ -90,7 +90,7 @@ Additional seal options:
 - `localtimeOffsetMsec`: Adjust local clock when sealing/unsealing (default `0`).
 - `encode` / `decode`: Custom serializers (defaults to lossless JSON encode/parse).
 
-### Password shapes
+### Password Shapes
 
 - Simple: string or `Uint8Array`.
 - With id: `{ id, secret }` or `{ id, encryption, integrity }`.
@@ -121,7 +121,7 @@ const sealed = await Iron.seal(payload, password, options)
 const unsealed = await Iron.unseal(sealed, password, options)
 ```
 
-### Application-Level Versioning
+### App-Level Versioning
 
 Manage evolving data formats and encryption parameters by embedding version prefixes in the sealed token.
 
@@ -236,6 +236,13 @@ This library is designed to provide confidentiality and integrity for data store
 - **Side-Channel Attacks**: Be aware of potential side-channel attacks that could leak information about the sealed data or keys through timing or other observable behaviors.
 - **Data Sensitivity**: Evaluate the sensitivity of the data being sealed and ensure that the chosen algorithms and key sizes are appropriate for the level of security required.
 
+## Development
+
+- Format: `deno task format`
+- Lint: `deno task lint`
+- Test: `deno task test`
+- Type check: `deno task type`
+
 ## Credits
 
 ```txt
@@ -245,13 +252,6 @@ This library is designed to provide confidentiality and integrity for data store
     All rights reserved.
     https://cdn.jsdelivr.net/npm/@hapi/iron@7.0.1/LICENSE.md
 ```
-
-## Development
-
-- Format: `deno task format`
-- Lint: `deno task lint`
-- Test: `deno task test`
-- Type check: `deno task type`
 
 ## Sponsors
 
