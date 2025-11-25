@@ -14,6 +14,8 @@ import { jsonParse, losslessJsonStringify } from './utils.ts'
 
 export type * from './types.ts'
 
+type Mutable<T> = { -readonly [K in keyof T]: T[K] }
+
 type TupleOf<L extends number, T, R extends unknown[] = []> = //
   R['length'] extends L ? R : TupleOf<L, T, [T, ...R]>
 
@@ -64,8 +66,6 @@ export const defaults: SealOptions = /* @__PURE__ */ Object.freeze({
   timestampSkewSec: 60,
   localtimeOffsetMsec: 0,
 })
-
-type Mutable<T> = { -readonly [K in keyof T]: T[K] }
 
 /**
  * Clones the options object.
