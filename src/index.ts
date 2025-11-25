@@ -1,396 +1,338 @@
-import type { _Crypto } from './_crypto.js'
+import { base64ToUint8Array, uint8ArrayToBase64, uint8ArrayToHex } from 'uint8array-extras'
 import type {
+  Algorithms,
   EncryptionAlgorithm,
   GenerateKeyOptions,
-  HMacResult,
+  HmacResult,
   IntegrityAlgorithm,
   Key,
   Password,
-  RawPassword,
+  password,
   SealOptions,
-  password
-} from './types.js'
-import { base64urlDecode, base64urlEncode, bufferToString, stringToBuffer } from './utils.js'
+} from './types.ts'
+import { jsonParse, losslessJsonStringify } from './utils.ts'
 
-// re-export all types and utilities
-export type * from './types.js'
-export * from './utils.js'
+export type * from './types.ts'
+
+type TupleOf<L extends number, T, R extends unknown[] = []> = //
+  R['length'] extends L ? R : TupleOf<L, T, [T, ...R]>
+
+const enc = /* @__PURE__ */ new TextEncoder()
+const dec = /* @__PURE__ */ new TextDecoder()
+
+const jsBase64Enabled = /* @__PURE__ */ (() =>
+  typeof Uint8Array.fromBase64 === 'function' &&
+  typeof Uint8Array.prototype.toBase64 === 'function' &&
+  typeof Uint8Array.prototype.toHex === 'function')()
+
+function b64ToU8(str: string): Uint8Array<ArrayBuffer> {
+  if (jsBase64Enabled) return Uint8Array.fromBase64(str, { alphabet: 'base64url' })
+  return base64ToUint8Array(str)
+}
+
+function u8ToB64(arr: Uint8Array | ArrayBuffer): string {
+  arr = arr instanceof ArrayBuffer ? new Uint8Array(arr) : arr
+  if (jsBase64Enabled) return arr.toBase64({ alphabet: 'base64url', omitPadding: true })
+  return uint8ArrayToBase64(arr, { urlSafe: true })
+}
+
+function u8ToHex(arr: Uint8Array | ArrayBuffer): string {
+  arr = arr instanceof ArrayBuffer ? new Uint8Array(arr) : arr
+  if (jsBase64Enabled) return arr.toHex()
+  return uint8ArrayToHex(arr)
+}
 
 /**
  * The default encryption and integrity settings.
  */
-export const defaults: SealOptions = {
-  encryption: { saltBits: 256, algorithm: 'aes-256-cbc', iterations: 1, minPasswordlength: 32 },
-  integrity: { saltBits: 256, algorithm: 'sha256', iterations: 1, minPasswordlength: 32 },
+export const defaults: SealOptions = /* @__PURE__ */ Object.freeze({
+  encryption: /* @__PURE__ */ Object.freeze({
+    algorithm: 'aes-256-cbc',
+    saltBits: 256,
+    iterations: 1,
+    minPasswordlength: 32,
+  }),
+
+  integrity: /* @__PURE__ */ Object.freeze({
+    algorithm: 'sha256',
+    saltBits: 256,
+    iterations: 1,
+    minPasswordlength: 32,
+  }),
+
   ttl: 0,
   timestampSkewSec: 60,
-  localtimeOffsetMsec: 0
-}
+  localtimeOffsetMsec: 0,
+})
+
+type Mutable<T> = { -readonly [K in keyof T]: T[K] }
 
 /**
  * Clones the options object.
- * @param options The options object to clone
- * @returns A new options object
+ * @param options The options to clone.
+ * @returns A mutable copy of the options.
+ *
+ * @internal
  */
-export const clone = (options: SealOptions): SealOptions => ({
-  ...options,
-  encryption: { ...options.encryption },
-  integrity: { ...options.integrity }
-})
+export function clone(options: SealOptions): Mutable<SealOptions> & {
+  encryption: Mutable<SealOptions['encryption']>
+  integrity: Mutable<SealOptions['integrity']>
+} {
+  return { ...options, encryption: { ...options.encryption }, integrity: { ...options.integrity } }
+}
 
 /**
  * Configuration of each supported algorithm.
  */
-export const algorithms = {
-  'aes-128-ctr': { keyBits: 128, ivBits: 128, name: 'AES-CTR' },
-  'aes-256-cbc': { keyBits: 256, ivBits: 128, name: 'AES-CBC' },
-  sha256: { keyBits: 256, name: 'SHA-256' }
-} as const
+export const algorithms: Algorithms = /* @__PURE__ */ Object.freeze({
+  'aes-128-ctr': /* @__PURE__ */ Object.freeze({ keyBits: 128, ivBits: 128, name: 'AES-CTR' }),
+  'aes-256-cbc': /* @__PURE__ */ Object.freeze({ keyBits: 256, ivBits: 128, name: 'AES-CBC' }),
+  'sha256': /* @__PURE__ */ Object.freeze({ keyBits: 256, ivBits: undefined, name: 'SHA-256' }),
+})
 
 /**
  * MAC normalization format version.
+ * Prevents comparison of MAC values generated with different normalized string formats.
  */
 export const macFormatVersion = '2'
 
 /**
  * MAC normalization prefix.
  */
-export const macPrefix = 'Fe26.2' // `Fe26.${macFormatVersion}`
+export const macPrefix = 'Fe26.2' // 'Fe26.' + macFormatVersion
 
 /**
- * Generates cryptographically strong pseudorandom bytes.
- * @param _crypto Custom WebCrypto implementation
- * @param size Number of bytes to generate
- * @returns Buffer
+ * Generates cryptographically strong pseudorandom bits.
+ * @param bits Number of bits to generate (must be a positive multiple of 8).
+ * @returns Uint8Array containing the random bits.
+ *
+ * @internal
  */
-const randomBytes = (_crypto: _Crypto, size: number): Uint8Array => {
-  const bytes = new Uint8Array(size)
-  _crypto.getRandomValues(bytes)
-  return bytes
-}
-
-/**
- * Generate cryptographically strong pseudorandom bits.
- * @param _crypto Custom WebCrypto implementation
- * @param bits Number of bits to generate
- * @returns Buffer
- */
-export const randomBits = (_crypto: _Crypto, bits: number): Uint8Array => {
-  if (bits < 1) throw new Error('Invalid random bits count')
-  const bytes = Math.ceil(bits / 8)
-  return randomBytes(_crypto, bytes)
-}
-
-/**
- * Provides an asynchronous Password-Based Key Derivation Function 2 (PBKDF2) implementation.
- * @param _crypto Custom WebCrypto implementation
- * @param password A password string or buffer key
- * @param salt A salt string or buffer
- * @param iterations The number of iterations to use
- * @param keyLength The length of the derived key in bytes
- * @param hash The hash algorithm to use
- */
-const pbkdf2 = async (
-  _crypto: _Crypto,
-  password: string,
-  salt: string,
-  iterations: number,
-  keyLength: number,
-  hash: HashAlgorithmIdentifier
-): Promise<ArrayBuffer> => {
-  const passwordBuffer = stringToBuffer(password)
-  const importedKey = await _crypto.subtle.importKey(
-    'raw',
-    passwordBuffer,
-    { name: 'PBKDF2' },
-    false,
-    ['deriveBits']
-  )
-  const saltBuffer = stringToBuffer(salt)
-  const params = { name: 'PBKDF2', hash, salt: saltBuffer, iterations }
-  const derivation = await _crypto.subtle.deriveBits(params, importedKey, keyLength * 8)
-  return derivation
+export function randomBits(bits: number): Uint8Array<ArrayBuffer> {
+  return crypto.getRandomValues(new Uint8Array(bits / 8))
 }
 
 /**
  * Generates a key from the password.
- * @param _crypto Custom WebCrypto implementation
- * @param password A password string or buffer key
- * @param options Object used to customize the key derivation algorithm
- * @returns An object with keys: key, salt, iv
+ * @param password The password string or buffer.
+ * @param options Key generation options.
+ * @returns The generated key and associated parameters.
  */
-export const generateKey = async (
-  _crypto: _Crypto,
+export async function generateKey(
   password: Password,
-  options: GenerateKeyOptions
-): Promise<Key> => {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (!password?.length) throw new Error('Empty password')
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (options == null || typeof options !== 'object') throw new Error('Bad options')
-  if (!(options.algorithm in algorithms)) throw new Error(`Unknown algorithm: ${options.algorithm}`)
+  options: GenerateKeyOptions<EncryptionAlgorithm>,
+): Promise<Key<EncryptionAlgorithm>>
+export async function generateKey(
+  password: Password,
+  options: GenerateKeyOptions<IntegrityAlgorithm>,
+): Promise<Key<IntegrityAlgorithm>>
+export async function generateKey(
+  password: Password,
+  options: GenerateKeyOptions,
+): Promise<Key> {
+  if (!password || !password.length) throw new Error('Empty password')
+  if (!options || typeof options !== 'object') throw new Error('Bad options')
 
   const algorithm = algorithms[options.algorithm]
-  const result: Partial<Key> = {}
+  if (!algorithm) throw new Error('Unknown algorithm: ' + options.algorithm)
 
-  const hmac = options.hmac ?? false
-  const id = hmac ? { name: 'HMAC', hash: algorithm.name } : { name: algorithm.name }
-  const usage: KeyUsage[] = hmac ? ['sign', 'verify'] : ['encrypt', 'decrypt']
+  const isHmac = algorithm.name === 'SHA-256' // keep in sync with IntegrityAlgorithm type
+  const id = isHmac
+    ? { name: 'HMAC', hash: algorithm.name, length: algorithm.keyBits }
+    : { name: algorithm.name, length: algorithm.keyBits }
+  const usages: KeyUsage[] = isHmac ? ['sign', 'verify'] : ['encrypt', 'decrypt']
+
+  const iv = options.iv || (algorithm.ivBits ? randomBits(algorithm.ivBits) : undefined)
 
   if (typeof password === 'string') {
-    if (password.length < options.minPasswordlength)
-      throw new Error(
-        `Password string too short (min ${options.minPasswordlength} characters required)`
-      )
-
-    let { salt = '' } = options
-    if (!salt) {
-      const { saltBits = 0 } = options
-      if (!saltBits) throw new Error('Missing salt and saltBits options')
-      const randomSalt = randomBits(_crypto, saltBits)
-      salt = [...new Uint8Array(randomSalt)].map((x) => x.toString(16).padStart(2, '0')).join('')
+    if (password.length < options.minPasswordlength) {
+      throw new Error('Password string too short (min ' + options.minPasswordlength + ' characters required)')
     }
 
-    const derivedKey = await pbkdf2(
-      _crypto,
-      password,
-      salt,
-      options.iterations,
-      algorithm.keyBits / 8,
-      'SHA-1'
-    )
-    const importedEncryptionKey = await _crypto.subtle.importKey(
-      'raw',
-      derivedKey,
-      id,
-      false,
-      usage
-    )
-    result.key = importedEncryptionKey
-    result.salt = salt
+    let salt = options.salt
+    if (!salt) {
+      if (!options.saltBits) throw new Error('Missing salt and saltBits options')
+      salt = u8ToHex(randomBits(options.saltBits))
+    }
 
-    //
-  } else {
-    if (password.length < algorithm.keyBits / 8) throw new Error('Key buffer (password) too small')
-    result.key = await _crypto.subtle.importKey('raw', password, id, false, usage)
-    result.salt = ''
+    const baseKey = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey'])
+    const algorithm = { name: 'PBKDF2', salt: enc.encode(salt), iterations: options.iterations, hash: 'SHA-1' }
+    const derivedKey = await crypto.subtle.deriveKey(algorithm, baseKey, id, false, usages)
+
+    return { key: derivedKey, iv, salt }
   }
 
-  if (options.iv) result.iv = options.iv
-  else if ('ivBits' in algorithm) result.iv = randomBits(_crypto, algorithm.ivBits)
-  return result as Key
+  if (password.length < algorithm.keyBits / 8) throw new Error('Key buffer (password) too small')
+  const key = await crypto.subtle.importKey('raw', password.slice(), id, false, usages)
+
+  return { key, iv, salt: '' }
 }
 
 /**
  * @internal
  */
-const getEncryptParams = (
+function getEncryptParams(
   algorithm: EncryptionAlgorithm,
-  key: Key,
-  data: Uint8Array | string
-): [AesCbcParams | AesCtrParams, CryptoKey, Uint8Array] => {
+  key: Key<EncryptionAlgorithm>,
+  data: Uint8Array | string,
+): [AesCbcParams | AesCtrParams, CryptoKey, Uint8Array<ArrayBuffer>] {
   return [
-    algorithm === 'aes-128-ctr'
-      ? ({ name: 'AES-CTR', counter: key.iv, length: 128 } satisfies AesCtrParams)
-      : ({ name: 'AES-CBC', iv: key.iv } satisfies AesCbcParams),
+    algorithm === 'aes-128-ctr' ? { name: 'AES-CTR', counter: key.iv, length: 128 } : { name: 'AES-CBC', iv: key.iv },
     key.key,
-    typeof data === 'string' ? stringToBuffer(data) : data
+    typeof data === 'string' ? enc.encode(data) : data.slice(),
   ]
 }
 
 /**
  * Encrypts data.
- * @param _crypto Custom WebCrypto implementation
- * @param password A password string or buffer key
- * @param options Object used to customize the key derivation algorithm
- * @param data String to encrypt
- * @returns An object with keys: encrypted, key
+ * @param password The password string or buffer.
+ * @param options Key generation options.
+ * @param data The data string to encrypt.
+ * @returns The encrypted data and associated key information.
  */
-export const encrypt = async (
-  _crypto: _Crypto,
+export async function encrypt(
   password: Password,
   options: GenerateKeyOptions<EncryptionAlgorithm>,
-  data: string
-): Promise<{ encrypted: Uint8Array; key: Key }> => {
-  const key = await generateKey(_crypto, password, options)
-  const encrypted = await _crypto.subtle.encrypt(...getEncryptParams(options.algorithm, key, data))
+  data: Uint8Array | string,
+): Promise<{ encrypted: Uint8Array<ArrayBuffer>; key: Key<EncryptionAlgorithm> }> {
+  const key = await generateKey(password, options)
+  const encrypted = await crypto.subtle.encrypt(...getEncryptParams(options.algorithm, key, data))
   return { encrypted: new Uint8Array(encrypted), key }
 }
 
 /**
  * Decrypts data.
- * @param _crypto Custom WebCrypto implementation
- * @param password A password string or buffer key
- * @param options Object used to customize the key derivation algorithm
- * @param data Buffer to decrypt
- * @returns Decrypted string
+ * @param password The password string or buffer.
+ * @param options Key generation options.
+ * @param data The encrypted data to decrypt.
+ * @returns The decrypted data string.
  */
-export const decrypt = async (
-  _crypto: _Crypto,
+export async function decrypt(
   password: Password,
   options: GenerateKeyOptions<EncryptionAlgorithm>,
-  data: Uint8Array | string
-): Promise<string> => {
-  const key = await generateKey(_crypto, password, options)
-  const decrypted = await _crypto.subtle.decrypt(...getEncryptParams(options.algorithm, key, data))
-  return bufferToString(new Uint8Array(decrypted))
+  data: Uint8Array | string,
+): Promise<string> {
+  const key = await generateKey(password, options)
+  const decrypted = await crypto.subtle.decrypt(...getEncryptParams(options.algorithm, key, data))
+  return dec.decode(decrypted)
 }
 
 /**
  * Calculates a HMAC digest.
- * @param _crypto Custom WebCrypto implementation
- * @param password A password string or buffer
- * @param options Object used to customize the key derivation algorithm
- * @param data String to calculate the HMAC over
- * @returns An object with keys: digest, salt
+ * @param password The password string or buffer.
+ * @param options Key generation options.
+ * @param data The data string to HMAC.
+ * @returns The HMAC digest and associated key information.
  */
-export const hmacWithPassword = async (
-  _crypto: _Crypto,
+export async function hmacWithPassword(
   password: Password,
   options: GenerateKeyOptions<IntegrityAlgorithm>,
-  data: string
-): Promise<HMacResult> => {
-  const key = await generateKey(_crypto, password, { ...options, hmac: true })
-  const textBuffer = stringToBuffer(data)
-  const signed = await _crypto.subtle.sign({ name: 'HMAC' }, key.key, textBuffer)
-  const digest = base64urlEncode(new Uint8Array(signed))
-  return { digest, salt: key.salt }
+  data: string,
+): Promise<HmacResult> {
+  const key = await generateKey(password, options)
+  const signed = await crypto.subtle.sign('HMAC', key.key, enc.encode(data))
+  return { digest: u8ToB64(signed), salt: key.salt }
 }
 
 /**
  * Normalizes a password parameter.
- * @param password
- * @returns An object with keys: id, encryption, integrity
+ * @param password The password to normalize.
+ * @returns The normalized password object.
  */
-const normalizePassword = (password: RawPassword): password.Specific => {
-  if (typeof password === 'string' || password instanceof Uint8Array)
-    return { encryption: password, integrity: password }
-  if ('secret' in password)
-    return { id: password.id, encryption: password.secret, integrity: password.secret }
-  return { id: password.id, encryption: password.encryption, integrity: password.integrity }
+function normalizePassword(password: password.Hash[string] | undefined): password.Specific {
+  const normalized = typeof password === 'string' || password instanceof Uint8Array
+    ? { encryption: password, integrity: password }
+    : password && typeof password === 'object'
+    ? 'secret' in password
+      ? { id: password.id, encryption: password.secret, integrity: password.secret }
+      : { id: password.id, encryption: password.encryption, integrity: password.integrity }
+    : undefined
+
+  if (
+    !normalized ||
+    !normalized.encryption || normalized.encryption.length === 0 ||
+    !normalized.integrity || normalized.integrity.length === 0
+  ) throw new Error('Empty password')
+
+  return normalized
 }
 
 /**
- * Serializes, encrypts, and signs objects into an iron protocol string.
- * @param _crypto Custom WebCrypto implementation
- * @param object Data being sealed
- * @param password A string, buffer or object
- * @param options Object used to customize the key derivation algorithm
- * @returns Iron sealed string
+ * Serializes, encrypts, and signs an object into an iron protocol string.
+ * @param object The object to seal.
+ * @param password The password to use for sealing.
+ * @param options The sealing options.
+ * @returns The sealed string.
  */
-export const seal = async (
-  _crypto: _Crypto,
-  object: unknown,
-  password: RawPassword,
-  options: SealOptions
-): Promise<string> => {
-  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-  if (!password) throw new Error('Empty password')
+export async function seal(object: unknown, password: password.Hash[string], options: SealOptions): Promise<string> {
+  const now = Date.now() + (options.localtimeOffsetMsec || 0)
 
-  const opts = clone(options)
-  const now = Date.now() + (opts.localtimeOffsetMsec || 0)
-  const objectString = JSON.stringify(object)
-
-  const pass = normalizePassword(password)
-  const { id = '', encryption, integrity } = pass
+  const { id = '', encryption, integrity } = normalizePassword(password)
   if (id && !/^\w+$/.test(id)) throw new Error('Invalid password id')
 
-  const { encrypted, key } = await encrypt(_crypto, encryption, opts.encryption, objectString)
+  const { encrypted, key } = await encrypt(
+    encryption,
+    options.encryption,
+    (options.encode || losslessJsonStringify)(object),
+  )
 
-  const encryptedB64 = base64urlEncode(new Uint8Array(encrypted))
-  const iv = base64urlEncode(key.iv)
-  const expiration = opts.ttl ? now + opts.ttl : ''
-  const macBaseString = `${macPrefix}*${id}*${key.salt}*${iv}*${encryptedB64}*${expiration}`
+  const expiration = options.ttl ? now + options.ttl : ''
+  const macBaseString = //
+    macPrefix + '*' + id + '*' + key.salt + '*' + u8ToB64(key.iv) + '*' + u8ToB64(encrypted) + '*' + expiration
 
-  const mac = await hmacWithPassword(_crypto, integrity, opts.integrity, macBaseString)
-  const sealed = `${macBaseString}*${mac.salt}*${mac.digest}`
-  return sealed
+  const mac = await hmacWithPassword(integrity, options.integrity, macBaseString)
+  return macBaseString + '*' + mac.salt + '*' + mac.digest
 }
 
 /**
- * Implements a constant-time comparison algorithm.
- * @param a Original string (running time is always proportional to its length)
- * @param b String to compare to original string
- * @returns Returns true if `a` is equal to `b`, without leaking timing information
- *          that would allow an attacker to guess one of the values.
+ * Verifies, decrypts, and reconstructs an object from an iron protocol string.
+ * @param sealed The sealed string.
+ * @param password The password to use for unsealing.
+ * @param options The unsealing options.
+ * @returns The unsealed object.
  */
-const fixedTimeComparison = (a: string, b: string): boolean => {
-  let mismatch = a.length === b.length ? 0 : 1
-  // eslint-disable-next-line no-param-reassign
-  if (mismatch) b = a
-  // eslint-disable-next-line no-bitwise, unicorn/prefer-code-point
-  for (let i = 0; i < a.length; i += 1) mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i)
-  return mismatch === 0
-}
-
-/**
- * Verifies, decrypts, and reconstruct an iron protocol string into an object.
- * @param _crypto Custom WebCrypto implementation
- * @param sealed The iron protocol string generated with seal()
- * @param password A string, buffer, or object
- * @param options Object used to customize the key derivation algorithm
- * @returns The verified decrypted object (can be null)
- */
-export const unseal = async (
-  _crypto: _Crypto,
+export async function unseal(
   sealed: string,
   password: Password | password.Hash,
-  options: SealOptions
-): Promise<unknown> => {
-  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-  if (!password) throw new Error('Empty password')
-
-  const opts = clone(options)
-  const now = Date.now() + (opts.localtimeOffsetMsec || 0)
+  options: SealOptions,
+): Promise<unknown> {
+  const now = Date.now() + (options.localtimeOffsetMsec || 0)
 
   const parts = sealed.split('*')
   if (parts.length !== 8) throw new Error('Incorrect number of sealed components')
 
-  /* eslint-disable @typescript-eslint/no-non-null-assertion */
-  const prefix = parts[0]!
-  let passwordId = parts[1]!
-  const encryptionSalt = parts[2]!
-  const encryptionIv = parts[3]!
-  const encryptedB64 = parts[4]!
-  const expiration = parts[5]!
-  const hmacSalt = parts[6]!
-  const hmac = parts[7]!
-  const macBaseString = `${prefix}*${passwordId}*${encryptionSalt}*${encryptionIv}*${encryptedB64}*${expiration}`
-  /* eslint-enable */
+  const [prefix, passwordId, encryptionSalt, ivB64, encryptedB64, expiration, hmacSalt, hmacDigestB64] =
+    parts as TupleOf<8, string>
 
-  if (macPrefix !== prefix) throw new Error('Wrong mac prefix')
+  if (prefix !== macPrefix) throw new Error('Wrong mac prefix')
 
   if (expiration) {
-    if (!/^\d+$/.test(expiration)) throw new Error('Invalid expiration')
+    if (!/^[1-9]\d*$/.test(expiration)) throw new Error('Invalid expiration')
     const exp = Number.parseInt(expiration, 10)
-    if (exp <= now - opts.timestampSkewSec * 1000) throw new Error('Expired seal')
+    if (exp <= now - options.timestampSkewSec * 1000) throw new Error('Expired seal')
   }
 
-  let pass: RawPassword = ''
-  passwordId = passwordId || 'default'
-
+  let pass
   if (typeof password === 'string' || password instanceof Uint8Array) pass = password
-  else if (passwordId in password) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    pass = password[passwordId]!
-  } else {
-    throw new Error(`Cannot find password: ${passwordId}`)
+  else if (typeof password === 'object' && password !== null) {
+    const passwordIdKey = passwordId || 'default'
+    pass = password[passwordIdKey]
+    if (!pass) throw new Error('Cannot find password: ' + passwordIdKey)
   }
-
   pass = normalizePassword(pass)
 
-  const macOptions: GenerateKeyOptions<IntegrityAlgorithm> = opts.integrity
-  macOptions.salt = hmacSalt
-  const mac = await hmacWithPassword(_crypto, pass.integrity, macOptions, macBaseString)
+  const key = await generateKey(pass.integrity, { ...options.integrity, salt: hmacSalt })
+  const macBaseString = //
+    prefix + '*' + passwordId + '*' + encryptionSalt + '*' + ivB64 + '*' + encryptedB64 + '*' + expiration
 
-  if (!fixedTimeComparison(mac.digest, hmac)) throw new Error('Bad hmac value')
+  const verify = await crypto.subtle.verify('HMAC', key.key, b64ToU8(hmacDigestB64), enc.encode(macBaseString))
+  if (!verify) throw new Error('Bad hmac value')
 
-  const encrypted = base64urlDecode(encryptedB64)
-  const decryptOptions: GenerateKeyOptions<EncryptionAlgorithm> = opts.encryption
-  decryptOptions.salt = encryptionSalt
-  decryptOptions.iv = base64urlDecode(encryptionIv)
+  const decryptedString = await decrypt(pass.encryption, {
+    ...options.encryption,
+    salt: encryptionSalt,
+    iv: b64ToU8(ivB64),
+  }, b64ToU8(encryptedB64))
 
-  const decrypted = await decrypt(_crypto, pass.encryption, decryptOptions, encrypted)
-  if (decrypted) return JSON.parse(decrypted) as unknown
-  return null
+  return (options.decode || jsonParse)(decryptedString)
 }

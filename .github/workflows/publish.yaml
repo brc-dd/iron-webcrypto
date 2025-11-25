@@ -12,14 +12,21 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: lewagon/wait-on-check-action@v1.4.1
         with:
-          node-version: 20
-          cache: pnpm
+          ref: ${{ github.ref }}
+          check-regexp: 'test / .*'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
           registry-url: https://registry.npmjs.org
-      - run: npm publish --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: npx jsr publish
+      - uses: denoland/setup-deno@v2
+      - run: |
+          deno task build
+          cd dist
+          npm install -g npm@latest
+          npm publish
+          deno install
+          deno publish

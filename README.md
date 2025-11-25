@@ -1,119 +1,247 @@
 # iron-webcrypto
 
-[![jsDocs.io](https://img.shields.io/badge/jsDocs.io-reference-blue?style=flat-square)](https://www.jsdocs.io/package/iron-webcrypto)
-[![downloads](https://img.shields.io/npm/dm/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto)
-[![npm](https://img.shields.io/npm/v/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto)
-[![deno](https://img.shields.io/badge/deno-iron@v1.2.1-blue.svg?style=flat-square)](https://deno.land/x/iron@v1.2.1/mod.ts)
-[![jsr](https://img.shields.io/badge/jsr-@brc--dd/iron@v1.2.1-blue.svg?style=flat-square)](https://jsr.io/@brc-dd/iron)
+[![npm](https://img.shields.io/npm/v/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto) [![jsr](https://img.shields.io/badge/jsr-@brc--dd/iron@v1.2.1-blue.svg?style=flat-square)](https://jsr.io/@brc-dd/iron) [![downloads](https://img.shields.io/npm/dm/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto)
 
-This module is a replacement for `@hapi/iron`, written using standard APIs like
-Web Crypto and Uint8Array, which make this compatible with a variety of runtimes
-like Node.js, Deno, Bun, browsers, workers, and edge environments. Refer
-`@hapi/iron`'s docs on what it does and how it works.
+WebCrypto-based implementation of `@hapi/iron`. It seals JSON-like data using symmetric encryption, signs it for integrity, and returns a compact, URL-safe string that can later be unsealed with the same password.
 
-> Check out [**unjs/h3**](https://github.com/unjs/h3) and
-> [**vvo/iron-session**](https://github.com/vvo/iron-session) to see this module
-> in use!
+Works anywhere `crypto.subtle` is available: Node.js v20+, Deno, Bun, Cloudflare Workers, etc.
 
----
+- Stateless, tamper-evident blobs for session-like data
+- Zero `node:crypto` or `node:buffer` usage; relies on standard WebCrypto
+- Compatible API with `@hapi/iron`
+- ESM-only; typed TypeScript surface
 
 ## Installation
 
-For Node.js and Bun, run any of the following commands depending on your package
-manager / runtime:
+Choose the variant that fits your toolchain:
 
 ```sh
 npm add iron-webcrypto
-yarn add iron-webcrypto
 pnpm add iron-webcrypto
+yarn add iron-webcrypto
+deno add npm:iron-webcrypto
 bun add iron-webcrypto
 ```
 
-You can then import it using:
-
-```ts
-import * as Iron from 'iron-webcrypto'
-```
-
-If using JSR, run any of the following commands depending on your package
-manager / runtime:
+<details>
+<summary>JSR package</summary>
 
 ```sh
 npx jsr add @brc-dd/iron
-yarn dlx jsr add @brc-dd/iron
-pnpm dlx jsr add @brc-dd/iron
-bunx jsr add @brc-dd/iron
-deno add @brc-dd/iron
+pnpm add jsr:@brc-dd/iron
+yarn add jsr:@brc-dd/iron
+deno add jsr:@brc-dd/iron
+bun x jsr add @brc-dd/iron
 ```
 
-You can then import it using:
+Import it like this:
 
 ```ts
 import * as Iron from '@brc-dd/iron'
 ```
 
-On Deno, you can also use any of the following imports:
+</details>
+
+## Quick Start
 
 ```ts
-import * as Iron from 'https://deno.land/x/iron@v1.2.1/mod.ts'
-import * as Iron from 'https://esm.sh/iron-webcrypto@1.2.1'
-import * as Iron from 'npm:iron-webcrypto@1.2.1'
+import * as Iron from 'iron-webcrypto'
+
+const password = 'a_long_random_secret_please_change_me'
+const payload = { userId: 123, scope: ['user'] }
+
+const sealed = await Iron.seal(payload, password, Iron.defaults)
+// => 'Fe26.2**...'
+
+// later or elsewhere
+const unsealed = await Iron.unseal(sealed, password, Iron.defaults)
+// => { userId: 123, scope: ['user'] }
 ```
 
-Don't use this module directly in the browser. While it will work, it's not
-recommended to use it in client-side code because of the security implications.
+- Check out [unjs/h3](https://github.com/unjs/h3), [vvo/iron-session](https://github.com/vvo/iron-session), and [other examples](https://github.com/search?q=/from+%5B%22'%5D((npm:%7Cjsr:)?(iron-webcrypto%7C@brc-dd%5C/iron)%7Chttps:%5C/%5C/(deno%5C.land%5C/x%5C/iron%7Cesm%5C.sh%5C/(iron-webcrypto%7Cjsr%5C/@brc-dd%5C/iron)))/+(language:TypeScript+OR+language:JavaScript)+NOT+is:fork+&type=code) to see this module in use.
+- Store secrets in environment variables or a secrets manager; avoid hardcoding keys.
+- While this module utilizes WebCrypto and technically functions in a browser environment, it is not recommended for client-side code due to the security risks inherent in exposing encryption secrets to the client.
 
-## Usage
+## API
 
-Refer [`@hapi/iron`'s docs](https://hapi.dev/module/iron/). There are certain
-differences.
+Reference: [jsDocs](https://www.jsdocs.io/package/iron-webcrypto)\
+Background: [@hapi/iron docs](https://hapi.dev/module/iron/)
 
-You need to pass a Web Crypto implementation as the first parameter to each
-function. For example:
+- `defaults`: Commonly used `SealOptions` (AES-256-CBC + SHA-256, 256-bit salts, no TTL).
+- `seal(object, password, options)`: Serializes, encrypts, and signs data into the iron token string.
+- `unseal(sealed, password, options)`: Verifies, decrypts, and parses a sealed string.
+- `encrypt(password, options, data)` / `decrypt(password, options, data)`: Low-level helpers for symmetric encryption.
+- `hmacWithPassword(password, options, data)`: Produces a URL-safe Base64 HMAC digest.
+- `generateKey(password, options)`: Derives a `CryptoKey` and IV (for encryption) or salt (for HMAC).
+
+### Options
+
+`SealOptions` has two parts, `encryption` and `integrity`, each with:
+
+- `algorithm`: Encryption is `'aes-256-cbc'` (default) or `'aes-128-ctr'`; integrity is `'sha256'`.
+- `saltBits`: Length of the randomly generated salt (default `256`).
+- `iterations`: PBKDF2 iterations for string passwords (default `1`).
+- `minPasswordlength`: Minimum string length (default `32`).
+
+Additional seal options:
+
+- `ttl`: Expiration in milliseconds (`0` means no expiry).
+- `timestampSkewSec`: Allowed clock skew when validating expiry (default `60`).
+- `localtimeOffsetMsec`: Adjust local clock when sealing/unsealing (default `0`).
+- `encode` / `decode`: Custom serializers (defaults to lossless JSON encode/parse).
+
+### Password Shapes
+
+- Simple: string or `Uint8Array`.
+- With id: `{ id, secret }` or `{ id, encryption, integrity }`.
+- Hash map: `{ [id]: password | secret | specific }` (used by `unseal` to look up `passwordId` embedded in the token).
+
+### Errors
+
+Most functions throw when inputs are missing, too short, or malformed (e.g., unknown algorithms, invalid Base64, expired token, or unserializable data). Catch and handle these to swallow errors or surface meaningful responses to callers.
+
+## Advanced Usage
+
+### Custom Serialization
+
+Swap the default JSON serializer for MessagePack, CBOR, Protobuf, or similar to cover broader data shapes when sealing and unsealing.
 
 ```ts
-Iron.seal(obj, password, Iron.defaults)
+import msgpack from '@msgpack/msgpack'
+import { base64ToUint8Array, uint8ArrayToBase64 } from 'uint8array-extras'
+import * as Iron from 'iron-webcrypto'
+
+const options: Iron.SealOptions = {
+  ...Iron.defaults,
+  encode: (obj) => uint8ArrayToBase64(msgpack.encode(obj)),
+  decode: (str) => msgpack.decode(base64ToUint8Array(str)),
+}
+
+const sealed = await Iron.seal(payload, password, options)
+const unsealed = await Iron.unseal(sealed, password, options)
 ```
 
-becomes:
+### App-Level Versioning
+
+Manage evolving data formats and encryption parameters by embedding version prefixes in the sealed token.
 
 ```ts
-Iron.seal(_crypto, obj, password, Iron.defaults)
+import * as Iron from 'iron-webcrypto'
+
+const options = {
+  v1: Iron.defaults, // drop older versions once their TTL window closes
+  v2: {
+    ...Iron.defaults,
+    encryption: { ...Iron.defaults.encryption, algorithm: 'aes-128-ctr', saltBits: 128, iterations: 1000 },
+    integrity: { ...Iron.defaults.integrity, iterations: 1000 },
+  },
+} as const
+
+async function seal(payload: unknown): Promise<string> {
+  const sealed = await Iron.seal(payload, password, options.v2) // use latest version to seal new data
+  return `v2.${sealed}`
+}
+
+async function unseal(sealed: string): Promise<unknown> {
+  if (sealed.startsWith('v2.')) {
+    return Iron.unseal(sealed.slice(3), password, options.v2)
+  }
+  if (sealed.startsWith('v1.')) {
+    return Iron.unseal(sealed.slice(3), password, options.v1)
+  }
+  throw new Error('Unknown version') // or choose a default behavior for legacy (unversioned) tokens
+}
 ```
 
-where `_crypto` is your Web Crypto implementation. Generally, this will be
-available in your context. For example, `globalThis.crypto` in browsers,
-workers, edge runtimes, Deno, Bun, and Node.js v19+;
-`require('crypto').webcrypto` in Node.js v15+. You can directly use
-[`uncrypto`](https://github.com/unjs/uncrypto) for this too. Also, you might
-need to polyfill this for older Node.js versions. I recommend using
-[`@peculiar/webcrypto`](https://github.com/PeculiarVentures/webcrypto) for that.
+## Migration
 
-There are certain other differences because of the underlying implementation
-using standard APIs instead of Node.js-specific ones like `node:crypto` and
-`node:buffer`. There might also be differences in certain error messages because
-of this.
+### From `@hapi/iron`
+
+The API is mostly compatible with `@hapi/iron`. Install the module and update your imports:
+
+```diff
+- import * as Iron from '@hapi/iron'
++ import * as Iron from 'iron-webcrypto'
+```
+
+Note that implementation differences may result in variations in error messages due to the use of standard Web APIs instead of Node.js-specific modules.
+
+### From `iron-webcrypto` v1 to v2
+
+- v2 uses the global `crypto` implementation by default, eliminating the need to pass WebCrypto as the first parameter:
+
+  ```diff
+  - const sealed = await Iron.seal(crypto, payload, password, Iron.defaults)
+  + const sealed = await Iron.seal(payload, password, Iron.defaults)
+
+  - const unsealed = await Iron.unseal(crypto, sealed, password, Iron.defaults)
+  + const unsealed = await Iron.unseal(sealed, password, Iron.defaults)
+  ```
+
+- The package is now ESM-only. Refer to [this gist](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c) for migration help.
+
+- The default encoder has been updated from `JSON.stringify` to a lossless JSON stringifier that validates data can be completely round-tripped without modification. While `undefined` values inside objects are still intentionally ignored (matching the original behavior), the new encoder will throw an error if it encounters any data that cannot be reliably serialized and deserialized, such as:
+
+  - Circular references
+  - Non-plain objects (with prototypes other than `Object.prototype` or `null`)
+  - Symbol keys or non-enumerable properties and methods
+  - `undefined` (empty) values in arrays (which become `null` with the standard `JSON.stringify`)
+  - Non-finite numbers (including `NaN`, `Infinity`, `-Infinity`)
+  - And any other data type not representable in JSON (e.g., `BigInt`, `Map`, `Set`, `Date`, `RegExp`, etc.)
+
+  This change ensures data integrity but may require updates to your code if you were previously relying on silent truncation of unserializable data. If you need to maintain the previous behavior, you have two options:
+
+  - Use the original JSON methods in options:
+
+    ```ts
+    const sealed = await Iron.seal(payload, password, { ...Iron.defaults, encode: JSON.stringify })
+    ```
+
+  - Pre-process data before sealing:
+
+    ```ts
+    const sealed = await Iron.seal(JSON.parse(JSON.stringify(payload)), password, Iron.defaults)
+    ```
 
 ## Security Considerations
 
-**Users are responsible for implementing `iron-webcrypto` in a secure manner and
-ensuring the security of their cryptographic keys. I DO NOT guarantee the
-security of this module.** So far, no security vulnerabilities have been
-reported, but I am no cryptography expert. Quoting
-[MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API):
+**You are responsible for securing your keys and integrating this library safely.** Quoting [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API):
 
-> The Web Crypto API provides a number of low-level cryptographic primitives.
-> It's very easy to misuse them, and the pitfalls involved can be very subtle.
+> The Web Crypto API provides a number of low-level cryptographic primitives. It's very easy to misuse them, and the pitfalls involved can be very subtle.
 >
-> Even assuming you use the basic cryptographic functions correctly, secure key
-> management and overall security system design are extremely hard to get right,
-> and are generally the domain of specialist security experts.
+> Even assuming you use the basic cryptographic functions correctly, secure key management and overall security system design are extremely hard to get right, and are generally the domain of specialist security experts.
 >
-> Errors in security system design and implementation can make the security of
-> the system completely ineffective.
+> Errors in security system design and implementation can make the security of the system completely ineffective.
 
-As a request, it would be great if someone with expertise in this field could
-thoroughly review the code.
+### Algorithm Strengths
+
+The cryptographic primitives used in the Iron algorithm have weakened over time. While AES-256-CBC and HMAC-SHA256 remain secure for most use cases, periodically review your security requirements, especially for sensitive data.
+
+PBKDF2 with a single iteration is suboptimal for password hashing but was deemed acceptable for key derivation in this context. Mitigate this risk by using strong, high-entropy passwords. `openssl rand -base64 24` is a handy way to generate one locally.
+
+Modern applications should consider stronger algorithms like AES-GCM that provide Authenticated Encryption with Associated Data (AEAD). Future releases may explore using it with appropriate key management strategies like HKDF-derived per-payload keys or envelope encryption schemes.
+
+### Password Rotation
+
+Assigning the password used an `id` allows for password rotation to improve the security of your deployment. Passwords should be rotated over time to reduce the risk of compromised security. When providing a password id, the id is included with the iron protocol string and it must match the id used to unseal.
+
+It is recommended to combine password id with the `ttl` option to generate iron protocol strings of limited time validity which also allow for rotating passwords without the need to keep all previous passwords around (only the number of passwords used within the ttl window).
+
+### Threat Model
+
+This library is designed to provide confidentiality and integrity for data stored in untrusted environments, such as client-side storage or third-party services. However, it does not protect against all possible threats. Consider the following when using this library:
+
+- **Key Management**: Ensure that encryption keys are stored securely and are not exposed to unauthorized parties. Compromise of the key compromises all data sealed with it.
+- **Replay Attacks**: While the library supports TTL for tokens, it does not inherently prevent replay attacks. Implement additional measures if necessary.
+- **Side-Channel Attacks**: Be aware of potential side-channel attacks that could leak information about the sealed data or keys through timing or other observable behaviors.
+- **Data Sensitivity**: Evaluate the sensitivity of the data being sealed and ensure that the chosen algorithms and key sizes are appropriate for the level of security required.
+
+## Development
+
+- Format: `deno task format`
+- Lint: `deno task lint`
+- Test: `deno task test`
+- Type check: `deno task type`
 
 ## Credits
 
@@ -123,20 +251,12 @@ thoroughly review the code.
     Copyright (c) 2012-2020, Sideway Inc
     All rights reserved.
     https://cdn.jsdelivr.net/npm/@hapi/iron@7.0.1/LICENSE.md
-
-@smithy/util-base64
-    Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-    https://cdn.jsdelivr.net/npm/@smithy/util-base64@3.0.0/LICENSE
-
-@smithy/util-utf8
-    Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-    https://cdn.jsdelivr.net/npm/@smithy/util-utf8@3.0.0/LICENSE
 ```
 
 ## Sponsors
 
 <p align="center">
   <a href="https://cdn.jsdelivr.net/gh/brc-dd/static/sponsors.svg">
-    <img alt="brc-dd's sponsors" src='https://cdn.jsdelivr.net/gh/brc-dd/static/sponsors.svg'/>
+    <img alt="brc-dd's sponsors" src="https://cdn.jsdelivr.net/gh/brc-dd/static/sponsors.svg" />
   </a>
 </p>
