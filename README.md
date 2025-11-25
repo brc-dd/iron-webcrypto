@@ -1,6 +1,6 @@
 # iron-webcrypto
 
-[![npm](https://img.shields.io/npm/v/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto) [![jsr](https://img.shields.io/badge/jsr-@brc--dd/iron@v1.2.1-blue.svg?style=flat-square)](https://jsr.io/@brc-dd/iron) [![downloads](https://img.shields.io/npm/dm/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto)
+[![npm](https://img.shields.io/npm/v/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto) [![jsr](https://img.shields.io/badge/jsr-@brc--dd/iron@v2.0.0-blue.svg?style=flat-square)](https://jsr.io/@brc-dd/iron) [![downloads](https://img.shields.io/npm/dm/iron-webcrypto?style=flat-square)](https://www.npmjs.com/package/iron-webcrypto)
 
 WebCrypto-based implementation of `@hapi/iron`. It seals JSON-like data using symmetric encryption, signs it for integrity, and returns a compact, URL-safe string that can later be unsealed with the same password.
 
