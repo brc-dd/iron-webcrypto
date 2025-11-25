@@ -4,7 +4,7 @@
 
 WebCrypto-based implementation of `@hapi/iron`. It seals JSON-like data using symmetric encryption, signs it for integrity, and returns a compact, URL-safe string that can later be unsealed with the same password.
 
-Works anywhere `crypto.subtle` is available: modern Node, Deno, Bun, Cloudflare Workers, etc.
+Works anywhere `crypto.subtle` is available: Node.js v20+, Deno, Bun, Cloudflare Workers, etc.
 
 - Stateless, tamper-evident blobs for session-like data
 - Zero `node:crypto` or `node:buffer` usage; relies on standard WebCrypto
@@ -115,25 +115,7 @@ Note that implementation differences may result in variations in error messages 
 
 ### From `iron-webcrypto` v1 to v2
 
-- v2 uses the global `crypto` implementation by default, eliminating the need to pass WebCrypto as the first parameter. If you need a custom WebCrypto implementation, polyfill it as follows:
-
-  ```ts
-  import { webcrypto } from 'node:crypto'
-
-  if (typeof globalThis.crypto === 'undefined') {
-    // @ts-ignore
-    globalThis.crypto = webcrypto
-  }
-  ```
-
-  Polyfill support:
-
-  - Not needed in Node.js v19+, Deno v1.11+, Bun v1+
-  - Node.js < v19 requires manual polyfill as above or `--experimental-global-webcrypto` flag
-  - Node.js < v15 requires `@peculiar/webcrypto` or similar polyfill
-  - Node.js < v10 has no polyfill available
-
-  Then you can call the functions without passing `crypto` explicitly.
+- v2 uses the global `crypto` implementation by default, eliminating the need to pass WebCrypto as the first parameter:
 
   ```diff
   - const sealed = await Iron.seal(crypto, payload, password, Iron.defaults)
@@ -143,7 +125,7 @@ Note that implementation differences may result in variations in error messages 
   + const unsealed = await Iron.unseal(sealed, password, Iron.defaults)
   ```
 
-- The package is now ESM-only. Node v20+ is recommended; older Node versions require dynamic `import()` if using CommonJS without a bundler / interop layer. Refer to [this gist](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c) for migration help.
+- The package is now ESM-only. Refer to [this gist](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c) for migration help.
 
 - The default encoder has been updated from `JSON.stringify` to a lossless JSON stringifier that validates data can be completely round-tripped without modification. While `undefined` values inside objects are still intentionally ignored (matching the original behavior), the new encoder will throw an error if it encounters any data that cannot be reliably serialized and deserialized, such as:
 
