@@ -58,7 +58,9 @@ const unsealed = await Iron.unseal(sealed, password, Iron.defaults)
 // => { userId: 123, scope: ['user'] }
 ```
 
-> Check out [unjs/h3](https://github.com/unjs/h3), [vvo/iron-session](https://github.com/vvo/iron-session), and [others](https://github.com/search?q=/from+%5B%22'%5D((npm:%7Cjsr:)?(iron-webcrypto%7C@brc-dd%5C/iron)%7Chttps:%5C/%5C/(deno%5C.land%5C/x%5C/iron%7Cesm%5C.sh%5C/(iron-webcrypto%7Cjsr%5C/@brc-dd%5C/iron)))/+(language:TypeScript+OR+language:JavaScript)+NOT+is:fork+&type=code) to see this module in use!
+- Check out [unjs/h3](https://github.com/unjs/h3), [vvo/iron-session](https://github.com/vvo/iron-session), and [others](https://github.com/search?q=/from+%5B%22'%5D((npm:%7Cjsr:)?(iron-webcrypto%7C@brc-dd%5C/iron)%7Chttps:%5C/%5C/(deno%5C.land%5C/x%5C/iron%7Cesm%5C.sh%5C/(iron-webcrypto%7Cjsr%5C/@brc-dd%5C/iron)))/+(language:TypeScript+OR+language:JavaScript)+NOT+is:fork+&type=code) to see this module in use!
+- Use `.env` or a secrets manager in production to store your secret key(s) securely.
+- While this module utilizes WebCrypto and technically functions in a browser environment, it is not recommended for client-side code due to the security risks inherent in exposing encryption secrets to the client.
 
 ## API
 
@@ -100,7 +102,7 @@ Most functions throw when inputs are missing, too short, or malformed (e.g., unk
 
 ## Migration
 
-### From `@hapi/iron` to `iron-webcrypto`
+### From `@hapi/iron`
 
 The API is mostly compatible with `@hapi/iron`. Install the module and update your imports:
 
@@ -111,7 +113,7 @@ The API is mostly compatible with `@hapi/iron`. Install the module and update yo
 
 Note that implementation differences may result in variations in error messages due to the use of standard Web APIs instead of Node.js-specific modules.
 
-### From v1.x to v2.x
+### From `iron-webcrypto` v1 to v2
 
 - v2 uses the global `crypto` implementation by default, eliminating the need to pass WebCrypto as the first parameter. If you need a custom WebCrypto implementation, polyfill it as follows:
 
@@ -165,6 +167,24 @@ Note that implementation differences may result in variations in error messages 
     ```ts
     const sealed = await Iron.seal(JSON.parse(JSON.stringify(payload)), password, Iron.defaults)
     ```
+
+## Security Considerations
+
+**You are responsible for securing your keys and integrating this library safely.** Quoting [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API):
+
+> The Web Crypto API provides a number of low-level cryptographic primitives. It's very easy to misuse them, and the pitfalls involved can be very subtle.
+>
+> Even assuming you use the basic cryptographic functions correctly, secure key management and overall security system design are extremely hard to get right, and are generally the domain of specialist security experts.
+>
+> Errors in security system design and implementation can make the security of the system completely ineffective.
+
+### Algorithm Strengths
+
+- The cryptographic primitives used in the Iron algorithm have weakened over time. While AES-256-CBC and HMAC-SHA256 remain secure for most use cases, periodically review your security requirements, especially for sensitive data.
+
+- PBKDF2 with a single iteration is suboptimal for password hashing but was deemed acceptable for key derivation in this context. Mitigate this risk by using strong, high-entropy passwords. `openssl rand -base64 24` is a handy way to generate one locally.
+
+- Modern applications should consider stronger algorithms like AES-GCM that provide Authenticated Encryption with Associated Data (AEAD). Future releases may explore using it with appropriate key management strategies like HKDF-derived per-payload keys or envelope encryption schemes.
 
 ## Credits
 
