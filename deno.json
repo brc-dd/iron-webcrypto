@@ -1,6 +1,6 @@
 {
   "name": "iron-webcrypto",
-  "version": "1.2.1",
+  "version": "2.0.0",
   "description": "a cryptographic utility for sealing-unsealing a JSON object using symmetric key encryption with message integrity verification",
   "keywords": [
     "authentication",

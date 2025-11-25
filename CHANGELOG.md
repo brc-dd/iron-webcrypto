@@ -1,3 +1,13 @@
+## [2.0.0](https://github.com/brc-dd/iron-webcrypto/compare/v1.2.1...v2.0.0) (2025-11-25)
+
+### ⚠ BREAKING CHANGES
+
+- Refer [migration guide](https://github.com/brc-dd/iron-webcrypto#from-iron-webcrypto-v1-to-v2) for details.
+
+### Features
+
+- rewrite ([#17](https://github.com/brc-dd/iron-webcrypto/issues/17)) ([ecc86a6](https://github.com/brc-dd/iron-webcrypto/commit/ecc86a606dfeb5ab2eebf58ff37f71262cecce6c))
+
 ## [1.2.1](https://github.com/brc-dd/iron-webcrypto/compare/v1.2.0...v1.2.1) (2024-05-09)
 
 ### Bug Fixes
