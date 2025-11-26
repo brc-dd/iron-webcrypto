@@ -180,7 +180,7 @@ Note that implementation differences may result in variations in error messages 
 
 - The package is now ESM-only. Refer to [this gist](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c) for migration help.
 
-- The default encoder has been updated from `JSON.stringify` to a lossless JSON stringifier that validates data can be completely round-tripped without modification. While `undefined` values inside objects are still intentionally ignored (matching the original behavior), the new encoder will throw an error if it encounters any data that cannot be reliably serialized and deserialized, such as:
+- The default encoder has been updated from `JSON.stringify` to a lossless JSON stringifier that validates that data can be round-tripped without modification. While `undefined` values inside objects are still intentionally ignored (matching the original behavior), the new encoder throws an error when it encounters data that cannot be reliably serialized and deserialized, such as:
 
   - Circular references
   - Non-plain objects (with prototypes other than `Object.prototype` or `null`)
