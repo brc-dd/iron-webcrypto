@@ -180,7 +180,7 @@ Note that implementation differences may result in variations in error messages 
 
 - The package is now ESM-only. Refer to [this gist](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c) for migration help.
 
-- The default encoder has been updated from `JSON.stringify` to a lossless JSON stringifier that validates that data can be round-tripped without modification. While `undefined` values inside objects are still intentionally ignored (matching the original behavior), the new encoder throws an error when it encounters data that cannot be reliably serialized and deserialized, such as:
+- The default encoder has been updated from `JSON.stringify` to a lossless JSON stringifier that validates that data can be round-tripped without modification. The new encoder throws an error when it encounters data that cannot be reliably serialized and deserialized, such as:
 
   - Circular references
   - Non-plain objects (with prototypes other than `Object.prototype` or `null`)
@@ -188,6 +188,8 @@ Note that implementation differences may result in variations in error messages 
   - `undefined` (empty) values in arrays (which become `null` with the standard `JSON.stringify`)
   - Non-finite numbers (including `NaN`, `Infinity`, `-Infinity`)
   - And any other data type not representable in JSON (e.g., `BigInt`, `Map`, `Set`, `Date`, `RegExp`, etc.)
+
+  Note that, `undefined` values in objects are ignored during serialization, and `-0` is converted to `0`.
 
   This change ensures data integrity but may require updates to your code if you were previously relying on silent truncation of unserializable data. If you need to maintain the previous behavior, you have two options:
 
