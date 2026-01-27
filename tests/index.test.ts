@@ -141,7 +141,8 @@ describe('Iron', () => {
       await assertRejects(Iron.generateKey(password, options), [
         'Invalid typed array length', // node
         'Array buffer allocation failed', // deno
-        'length too large', // bun
+        'length too large', // bun (older versions)
+        'Out of memory', // bun
       ])
     })
   })
