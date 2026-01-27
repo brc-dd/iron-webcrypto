@@ -225,9 +225,9 @@ Modern applications should consider stronger algorithms like AES-GCM that provid
 
 ### Password Rotation
 
-Assigning the password used an `id` allows for password rotation to improve the security of your deployment. Passwords should be rotated over time to reduce the risk of compromised security. When providing a password id, the id is included with the iron protocol string and it must match the id used to unseal.
+Assigning an `id` to a password enables password rotation and improves the security of your deployment. Passwords should be rotated periodically to reduce the risk of compromise. When a password ID is provided, the ID is included in the iron protocol string and must match the ID used during unsealing.
 
-It is recommended to combine password id with the `ttl` option to generate iron protocol strings of limited time validity which also allow for rotating passwords without the need to keep all previous passwords around (only the number of passwords used within the ttl window).
+It is recommended to combine the password ID with the `ttl` option to generate iron protocol strings with limited validity. This approach allows passwords to be rotated without needing to retain all previous passwords -- only those used within the TTL window must be kept.
 
 ### Threat Model
 
