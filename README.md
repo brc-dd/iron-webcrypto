@@ -60,7 +60,7 @@ const unsealed = await Iron.unseal(sealed, password, Iron.defaults)
 
 - Check out [unjs/h3](https://github.com/unjs/h3), [vvo/iron-session](https://github.com/vvo/iron-session), and [other examples](https://github.com/search?q=/from+%5B%22'%5D((npm:%7Cjsr:)?(iron-webcrypto%7C@brc-dd%5C/iron)%7Chttps:%5C/%5C/(deno%5C.land%5C/x%5C/iron%7Cesm%5C.sh%5C/(iron-webcrypto%7Cjsr%5C/@brc-dd%5C/iron)))/+(language:TypeScript+OR+language:JavaScript)+NOT+is:fork+&type=code) to see this module in use.
 - Store secrets in environment variables or a secrets manager; avoid hardcoding keys.
-- While this module utilizes WebCrypto and technically functions in a browser environment, it is not recommended for client-side code due to the security risks inherent in exposing encryption secrets to the client.
+- While this module utilizes WebCrypto and technically works in a browser environment, it is not recommended for client-side code due to the security risks inherent in exposing encryption secrets to the client.
 
 ## API
 
