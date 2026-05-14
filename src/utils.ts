@@ -1,3 +1,30 @@
+import { base64ToUint8Array, uint8ArrayToBase64, uint8ArrayToHex } from 'uint8array-extras'
+
+export const enc = /* @__PURE__ */ new TextEncoder()
+export const dec = /* @__PURE__ */ new TextDecoder()
+
+const jsBase64Enabled = /* @__PURE__ */ (() =>
+  typeof Uint8Array.fromBase64 === 'function' &&
+  typeof Uint8Array.prototype.toBase64 === 'function' &&
+  typeof Uint8Array.prototype.toHex === 'function')()
+
+export function b64ToU8(str: string): Uint8Array<ArrayBuffer> {
+  if (jsBase64Enabled) return Uint8Array.fromBase64(str, { alphabet: 'base64url' })
+  return base64ToUint8Array(str)
+}
+
+export function u8ToB64(arr: Uint8Array | ArrayBuffer): string {
+  arr = arr instanceof ArrayBuffer ? new Uint8Array(arr) : arr
+  if (jsBase64Enabled) return arr.toBase64({ alphabet: 'base64url', omitPadding: true })
+  return uint8ArrayToBase64(arr, { urlSafe: true })
+}
+
+export function u8ToHex(arr: Uint8Array | ArrayBuffer): string {
+  arr = arr instanceof ArrayBuffer ? new Uint8Array(arr) : arr
+  if (jsBase64Enabled) return arr.toHex()
+  return uint8ArrayToHex(arr)
+}
+
 export function losslessJsonStringify(data: unknown): string {
   try {
     if (isJson(data)) {

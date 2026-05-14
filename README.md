@@ -70,9 +70,6 @@ Background: [@hapi/iron docs](https://hapi.dev/module/iron/)
 - `defaults`: Commonly used `SealOptions` (AES-256-CBC + SHA-256, 256-bit salts, no TTL).
 - `seal(object, password, options)`: Serializes, encrypts, and signs data into the iron token string.
 - `unseal(sealed, password, options)`: Verifies, decrypts, and parses a sealed string.
-- `encrypt(password, options, data)` / `decrypt(password, options, data)`: Low-level helpers for symmetric encryption.
-- `hmacWithPassword(password, options, data)`: Produces a URL-safe Base64 HMAC digest.
-- `generateKey(password, options)`: Derives a `CryptoKey` and IV (for encryption) or salt (for HMAC).
 
 ### Options
 
@@ -81,7 +78,7 @@ Background: [@hapi/iron docs](https://hapi.dev/module/iron/)
 - `algorithm`: Encryption is `'aes-256-cbc'` (default) or `'aes-128-ctr'`; integrity is `'sha256'`.
 - `saltBits`: Length of the randomly generated salt (default `256`).
 - `iterations`: PBKDF2 iterations for string passwords (default `1`).
-- `minPasswordlength`: Minimum string length (default `32`).
+- `minPasswordLength`: Minimum string length (default `32`).
 
 Additional seal options:
 

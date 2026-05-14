@@ -46,7 +46,7 @@ export type SealOptionsSub<Algorithm extends _Algorithm = _Algorithm> = Readonly
   /**
    * Minimum password size. Defaults to 32.
    */
-  minPasswordlength: number
+  minPasswordLength: number
 }>
 
 /**
@@ -96,7 +96,7 @@ export type SealOptions = Readonly<{
  * generateKey() method options.
  */
 export type GenerateKeyOptions<Algorithm extends _Algorithm = _Algorithm> =
-  & Pick<SealOptionsSub<Algorithm>, 'algorithm' | 'iterations' | 'minPasswordlength'>
+  & Pick<SealOptionsSub<Algorithm>, 'algorithm' | 'iterations' | 'minPasswordLength'>
   & {
     saltBits?: number | undefined
     salt?: string | undefined

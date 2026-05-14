@@ -1,48 +1,14 @@
-import { base64ToUint8Array, uint8ArrayToBase64, uint8ArrayToHex } from 'uint8array-extras'
-import type {
-  Algorithms,
-  EncryptionAlgorithm,
-  GenerateKeyOptions,
-  HmacResult,
-  IntegrityAlgorithm,
-  Key,
-  Password,
-  password,
-  SealOptions,
-} from './types.ts'
-import { jsonParse, losslessJsonStringify } from './utils.ts'
+import { generateKeys } from './keys.ts'
+import type { EncryptionAlgorithm, Key, Password, password, SealOptions } from './types.ts'
+import { b64ToU8, dec, enc, jsonParse, losslessJsonStringify, u8ToB64 } from './utils.ts'
 
 export type * from './types.ts'
+export { algorithms } from './keys.ts'
 
 type Mutable<T> = { -readonly [K in keyof T]: T[K] }
 
 type TupleOf<L extends number, T, R extends unknown[] = []> = //
   R['length'] extends L ? R : TupleOf<L, T, [T, ...R]>
-
-const enc = /* @__PURE__ */ new TextEncoder()
-const dec = /* @__PURE__ */ new TextDecoder()
-
-const jsBase64Enabled = /* @__PURE__ */ (() =>
-  typeof Uint8Array.fromBase64 === 'function' &&
-  typeof Uint8Array.prototype.toBase64 === 'function' &&
-  typeof Uint8Array.prototype.toHex === 'function')()
-
-function b64ToU8(str: string): Uint8Array<ArrayBuffer> {
-  if (jsBase64Enabled) return Uint8Array.fromBase64(str, { alphabet: 'base64url' })
-  return base64ToUint8Array(str)
-}
-
-function u8ToB64(arr: Uint8Array | ArrayBuffer): string {
-  arr = arr instanceof ArrayBuffer ? new Uint8Array(arr) : arr
-  if (jsBase64Enabled) return arr.toBase64({ alphabet: 'base64url', omitPadding: true })
-  return uint8ArrayToBase64(arr, { urlSafe: true })
-}
-
-function u8ToHex(arr: Uint8Array | ArrayBuffer): string {
-  arr = arr instanceof ArrayBuffer ? new Uint8Array(arr) : arr
-  if (jsBase64Enabled) return arr.toHex()
-  return uint8ArrayToHex(arr)
-}
 
 /**
  * The default encryption and integrity settings.
@@ -52,14 +18,14 @@ export const defaults: SealOptions = /* @__PURE__ */ Object.freeze({
     algorithm: 'aes-256-cbc',
     saltBits: 256,
     iterations: 1,
-    minPasswordlength: 32,
+    minPasswordLength: 32,
   }),
 
   integrity: /* @__PURE__ */ Object.freeze({
     algorithm: 'sha256',
     saltBits: 256,
     iterations: 1,
-    minPasswordlength: 32,
+    minPasswordLength: 32,
   }),
 
   ttl: 0,
@@ -82,15 +48,6 @@ export function clone(options: SealOptions): Mutable<SealOptions> & {
 }
 
 /**
- * Configuration of each supported algorithm.
- */
-export const algorithms: Algorithms = /* @__PURE__ */ Object.freeze({
-  'aes-128-ctr': /* @__PURE__ */ Object.freeze({ keyBits: 128, ivBits: 128, name: 'AES-CTR' }),
-  'aes-256-cbc': /* @__PURE__ */ Object.freeze({ keyBits: 256, ivBits: 128, name: 'AES-CBC' }),
-  'sha256': /* @__PURE__ */ Object.freeze({ keyBits: 256, ivBits: undefined, name: 'SHA-256' }),
-})
-
-/**
  * MAC normalization format version.
  * Prevents comparison of MAC values generated with different normalized string formats.
  */
@@ -99,140 +56,7 @@ export const macFormatVersion = '2'
 /**
  * MAC normalization prefix.
  */
-export const macPrefix = 'Fe26.2' // 'Fe26.' + macFormatVersion
-
-/**
- * Generates cryptographically strong pseudorandom bits.
- * @param bits Number of bits to generate (must be a positive multiple of 8).
- * @returns Uint8Array containing the random bits.
- *
- * @internal
- */
-export function randomBits(bits: number): Uint8Array<ArrayBuffer> {
-  return crypto.getRandomValues(new Uint8Array(bits / 8))
-}
-
-/**
- * Generates a key from the password.
- * @param password The password string or buffer.
- * @param options Key generation options.
- * @returns The generated key and associated parameters.
- */
-export async function generateKey(
-  password: Password,
-  options: GenerateKeyOptions<EncryptionAlgorithm>,
-): Promise<Key<EncryptionAlgorithm>>
-export async function generateKey(
-  password: Password,
-  options: GenerateKeyOptions<IntegrityAlgorithm>,
-): Promise<Key<IntegrityAlgorithm>>
-export async function generateKey(
-  password: Password,
-  options: GenerateKeyOptions,
-): Promise<Key> {
-  if (!password || !password.length) throw new Error('Empty password')
-  if (!options || typeof options !== 'object') throw new Error('Bad options')
-
-  const algorithm = algorithms[options.algorithm]
-  if (!algorithm) throw new Error('Unknown algorithm: ' + options.algorithm)
-
-  const isHmac = algorithm.name === 'SHA-256' // keep in sync with IntegrityAlgorithm type
-  const id = isHmac
-    ? { name: 'HMAC', hash: algorithm.name, length: algorithm.keyBits }
-    : { name: algorithm.name, length: algorithm.keyBits }
-  const usages: KeyUsage[] = isHmac ? ['sign', 'verify'] : ['encrypt', 'decrypt']
-
-  const iv = options.iv || (algorithm.ivBits ? randomBits(algorithm.ivBits) : undefined)
-
-  if (typeof password === 'string') {
-    if (password.length < options.minPasswordlength) {
-      throw new Error('Password string too short (min ' + options.minPasswordlength + ' characters required)')
-    }
-
-    let salt = options.salt
-    if (!salt) {
-      if (!options.saltBits) throw new Error('Missing salt and saltBits options')
-      salt = u8ToHex(randomBits(options.saltBits))
-    }
-
-    const baseKey = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey'])
-    const algorithm = { name: 'PBKDF2', salt: enc.encode(salt), iterations: options.iterations, hash: 'SHA-1' }
-    const derivedKey = await crypto.subtle.deriveKey(algorithm, baseKey, id, false, usages)
-
-    return { key: derivedKey, iv, salt }
-  }
-
-  if (password.length < algorithm.keyBits / 8) throw new Error('Key buffer (password) too small')
-  const key = await crypto.subtle.importKey('raw', password.slice(), id, false, usages)
-
-  return { key, iv, salt: '' }
-}
-
-/**
- * @internal
- */
-function getEncryptParams(
-  algorithm: EncryptionAlgorithm,
-  key: Key<EncryptionAlgorithm>,
-  data: Uint8Array | string,
-): [AesCbcParams | AesCtrParams, CryptoKey, Uint8Array<ArrayBuffer>] {
-  return [
-    algorithm === 'aes-128-ctr' ? { name: 'AES-CTR', counter: key.iv, length: 128 } : { name: 'AES-CBC', iv: key.iv },
-    key.key,
-    typeof data === 'string' ? enc.encode(data) : data.slice(),
-  ]
-}
-
-/**
- * Encrypts data.
- * @param password The password string or buffer.
- * @param options Key generation options.
- * @param data The data string to encrypt.
- * @returns The encrypted data and associated key information.
- */
-export async function encrypt(
-  password: Password,
-  options: GenerateKeyOptions<EncryptionAlgorithm>,
-  data: Uint8Array | string,
-): Promise<{ encrypted: Uint8Array<ArrayBuffer>; key: Key<EncryptionAlgorithm> }> {
-  const key = await generateKey(password, options)
-  const encrypted = await crypto.subtle.encrypt(...getEncryptParams(options.algorithm, key, data))
-  return { encrypted: new Uint8Array(encrypted), key }
-}
-
-/**
- * Decrypts data.
- * @param password The password string or buffer.
- * @param options Key generation options.
- * @param data The encrypted data to decrypt.
- * @returns The decrypted data string.
- */
-export async function decrypt(
-  password: Password,
-  options: GenerateKeyOptions<EncryptionAlgorithm>,
-  data: Uint8Array | string,
-): Promise<string> {
-  const key = await generateKey(password, options)
-  const decrypted = await crypto.subtle.decrypt(...getEncryptParams(options.algorithm, key, data))
-  return dec.decode(decrypted)
-}
-
-/**
- * Calculates a HMAC digest.
- * @param password The password string or buffer.
- * @param options Key generation options.
- * @param data The data string to HMAC.
- * @returns The HMAC digest and associated key information.
- */
-export async function hmacWithPassword(
-  password: Password,
-  options: GenerateKeyOptions<IntegrityAlgorithm>,
-  data: string,
-): Promise<HmacResult> {
-  const key = await generateKey(password, options)
-  const signed = await crypto.subtle.sign('HMAC', key.key, enc.encode(data))
-  return { digest: u8ToB64(signed), salt: key.salt }
-}
+export const macPrefix = 'Fe26.2' // `Fe26.${macFormatVersion}`
 
 /**
  * Normalizes a password parameter.
@@ -257,6 +81,28 @@ function normalizePassword(password: password.Hash[string] | undefined): passwor
   return normalized
 }
 
+function passwordFromHash(password: Password | password.Hash, passwordId: string): password.Hash[string] | undefined {
+  if (typeof password === 'string' || password instanceof Uint8Array) return password
+  if (typeof password !== 'object' || password === null) return undefined
+
+  const passwordIdKey = passwordId || 'default'
+  const pass = password[passwordIdKey]
+  if (!pass) throw new Error(`Cannot find password: ${passwordIdKey}`)
+  return pass
+}
+
+function getEncryptParams(
+  algorithm: EncryptionAlgorithm,
+  key: Key<EncryptionAlgorithm>,
+  data: Uint8Array | string,
+): [AesCbcParams | AesCtrParams, CryptoKey, Uint8Array<ArrayBuffer>] {
+  return [
+    algorithm === 'aes-128-ctr' ? { name: 'AES-CTR', counter: key.iv, length: 128 } : { name: 'AES-CBC', iv: key.iv },
+    key.key,
+    typeof data === 'string' ? enc.encode(data) : data.slice(),
+  ]
+}
+
 /**
  * Serializes, encrypts, and signs an object into an iron protocol string.
  * @param object The object to seal.
@@ -270,18 +116,15 @@ export async function seal(object: unknown, password: password.Hash[string], opt
   const { id = '', encryption, integrity } = normalizePassword(password)
   if (id && !/^\w+$/.test(id)) throw new Error('Invalid password id')
 
-  const { encrypted, key } = await encrypt(
-    encryption,
-    options.encryption,
-    (options.encode || losslessJsonStringify)(object),
-  )
+  const dataString = (options.encode || losslessJsonStringify)(object)
+  const [encKey, intKey] = await generateKeys(encryption, integrity, options.encryption, options.integrity)
+  const encrypted = await crypto.subtle.encrypt(...getEncryptParams(options.encryption.algorithm, encKey, dataString))
 
   const expiration = options.ttl ? now + options.ttl : ''
-  const macBaseString = //
-    macPrefix + '*' + id + '*' + key.salt + '*' + u8ToB64(key.iv) + '*' + u8ToB64(encrypted) + '*' + expiration
+  const macBaseString = `${macPrefix}*${id}*${encKey.salt}*${u8ToB64(encKey.iv)}*${u8ToB64(encrypted)}*${expiration}`
+  const signed = await crypto.subtle.sign('HMAC', intKey.key, enc.encode(macBaseString))
 
-  const mac = await hmacWithPassword(integrity, options.integrity, macBaseString)
-  return macBaseString + '*' + mac.salt + '*' + mac.digest
+  return `${macBaseString}*${intKey.salt}*${u8ToB64(signed)}`
 }
 
 /**
@@ -312,27 +155,37 @@ export async function unseal(
     if (exp <= now - options.timestampSkewSec * 1000) throw new Error('Expired seal')
   }
 
-  let pass
-  if (typeof password === 'string' || password instanceof Uint8Array) pass = password
-  else if (typeof password === 'object' && password !== null) {
-    const passwordIdKey = passwordId || 'default'
-    pass = password[passwordIdKey]
-    if (!pass) throw new Error('Cannot find password: ' + passwordIdKey)
-  }
-  pass = normalizePassword(pass)
+  const pass = normalizePassword(passwordFromHash(password, passwordId))
 
-  const key = await generateKey(pass.integrity, { ...options.integrity, salt: hmacSalt })
-  const macBaseString = //
-    prefix + '*' + passwordId + '*' + encryptionSalt + '*' + ivB64 + '*' + encryptedB64 + '*' + expiration
+  // Decode base64 inputs synchronously up-front so any malformed input fails fast
+  // before we kick off the (parallel) crypto work below.
+  const iv = b64ToU8(ivB64)
+  const encrypted = b64ToU8(encryptedB64)
+  const hmacDigest = b64ToU8(hmacDigestB64)
 
-  const verify = await crypto.subtle.verify('HMAC', key.key, b64ToU8(hmacDigestB64), enc.encode(macBaseString))
+  const [encKey, intKey] = await generateKeys(
+    pass.encryption,
+    pass.integrity,
+    options.encryption,
+    options.integrity,
+    encryptionSalt,
+    iv,
+    hmacSalt,
+  )
+
+  const macBaseString = `${macPrefix}*${passwordId}*${encryptionSalt}*${ivB64}*${encryptedB64}*${expiration}`
+
+  // Run HMAC verification and AES decryption in parallel. We still surface the
+  // 'Bad hmac value' error first when verification fails — decryption errors
+  // are only revealed when the MAC is valid, preserving the original semantics.
+  const verifyPromise = crypto.subtle.verify('HMAC', intKey.key, hmacDigest, enc.encode(macBaseString))
+  const decryptPromise = crypto.subtle.decrypt(
+    ...getEncryptParams(options.encryption.algorithm, encKey, encrypted),
+  ).catch((err: unknown) => err instanceof Error ? err : new Error(String(err)))
+
+  const [verify, decryptedOrErr] = await Promise.all([verifyPromise, decryptPromise])
   if (!verify) throw new Error('Bad hmac value')
+  if (decryptedOrErr instanceof Error) throw decryptedOrErr
 
-  const decryptedString = await decrypt(pass.encryption, {
-    ...options.encryption,
-    salt: encryptionSalt,
-    iv: b64ToU8(ivB64),
-  }, b64ToU8(encryptedB64))
-
-  return (options.decode || jsonParse)(decryptedString)
+  return (options.decode || jsonParse)(dec.decode(decryptedOrErr))
 }
