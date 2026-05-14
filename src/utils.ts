@@ -16,7 +16,7 @@ export function jsonParse(string: string): unknown {
   }
 }
 
-function isJson(val: unknown): boolean {
+export function isJson(val: unknown): boolean {
   const stack: unknown[] = []
   const seen = new WeakSet()
 
@@ -46,22 +46,16 @@ function isJson(val: unknown): boolean {
       continue
     }
 
-    const proto = Reflect.getPrototypeOf(obj)
+    const proto = Object.getPrototypeOf(obj)
     if (proto !== null && proto !== Object.prototype) return false
 
-    const keys = Reflect.ownKeys(obj)
+    const keys = Object.keys(obj)
+    if (Reflect.ownKeys(obj).length !== keys.length) return false
+
     let i = keys.length
 
     while (i--) {
-      const key = keys[i]!
-
-      // no symbol keys, no non-enumerables
-      if (
-        typeof key !== 'string' ||
-        Reflect.getOwnPropertyDescriptor(obj, key)?.enumerable === false
-      ) return false
-
-      const val = (obj as Record<string, unknown>)[key]
+      const val = (obj as Record<string, unknown>)[keys[i]!]
       // allow undefined values even though they are lost during serialization
       // undefined elements in arrays are not allowed because they become null
       if (val !== undefined && !check(val)) return false
