@@ -22,7 +22,7 @@
     "format:fail": "deno fmt --check",
     "lint": "deno lint --fix",
     "lint:fail": "deno lint",
-    "test": "deno test",
+    "test": "deno test --coverage --shuffle --trace-leaks",
     "test:watch": "deno test --watch",
     "type": "deno check **/*.ts",
     "check:only": "deno task format:fail && deno task lint:fail && deno task type",

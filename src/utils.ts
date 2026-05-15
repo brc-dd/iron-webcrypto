@@ -10,18 +10,21 @@ const jsBase64Enabled = /* @__PURE__ */ (() =>
 
 export function b64ToU8(str: string): Uint8Array<ArrayBuffer> {
   if (jsBase64Enabled) return Uint8Array.fromBase64(str, { alphabet: 'base64url' })
+  // deno-coverage-ignore
   return base64ToUint8Array(str)
 }
 
 export function u8ToB64(arr: Uint8Array | ArrayBuffer): string {
   arr = arr instanceof ArrayBuffer ? new Uint8Array(arr) : arr
   if (jsBase64Enabled) return arr.toBase64({ alphabet: 'base64url', omitPadding: true })
+  // deno-coverage-ignore
   return uint8ArrayToBase64(arr, { urlSafe: true })
 }
 
 export function u8ToHex(arr: Uint8Array | ArrayBuffer): string {
   arr = arr instanceof ArrayBuffer ? new Uint8Array(arr) : arr
   if (jsBase64Enabled) return arr.toHex()
+  // deno-coverage-ignore
   return uint8ArrayToHex(arr)
 }
 
