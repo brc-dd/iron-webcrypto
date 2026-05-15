@@ -9,6 +9,11 @@ describe('Iron', () => {
   const obj = { a: 1, b: 2, c: [3, 4, 5], d: { e: 'f' } }
   const password = 'some_not_random_password_that_is_also_long_enough'
 
+  const ivPart = 3
+  const ciphertextPart = 4
+  const expirationPart = 5
+  const hmacDigestPart = 7
+
   it('turns object into a ticket then parses the ticket successfully', async () => {
     const sealed = await Iron.seal(obj, password, Iron.defaults)
     const unsealed = await Iron.unseal(sealed, { default: password }, Iron.defaults)
@@ -184,9 +189,8 @@ describe('Iron', () => {
     })
 
     it('returns an error when decryption fails after a valid hmac', async () => {
-      // Specific password: encryption secret is swapped on unseal while
-      // integrity secret stays — HMAC verifies, then AES-CBC decryption fails
-      // on padding because the wrong key was derived.
+      // Keep the integrity secret unchanged so HMAC passes and the wrong
+      // encryption key is the first observable failure.
       const encryption = 'long_encryption_secret_for_seal_test______'
       const integrity = 'a_different_integrity_secret_long_enough__'
       const sealed = await Iron.seal(obj, { id: 'k', encryption, integrity }, Iron.defaults)
@@ -205,7 +209,7 @@ describe('Iron', () => {
 
     it('returns an error when ciphertext base64 decoding fails', async () => {
       const parts = (await Iron.seal(obj, password, Iron.defaults)).split('*')
-      parts[4] += '??' // mangle encrypted ciphertext (base64 decode runs before hmac verify)
+      parts[ciphertextPart] += '??'
       await assertRejects(Iron.unseal(parts.join('*'), password, Iron.defaults), [
         'Invalid character', // node
         'Found a character that cannot be part of a valid base64 string.', // deno
@@ -215,7 +219,7 @@ describe('Iron', () => {
 
     it('returns an error when iv base64 decoding fails', async () => {
       const parts = (await Iron.seal(obj, password, Iron.defaults)).split('*')
-      parts[3] += '??' // mangle iv (base64 decode runs before hmac verify)
+      parts[ivPart] += '??'
       await assertRejects(Iron.unseal(parts.join('*'), password, Iron.defaults), [
         'Invalid character', // node
         'Found a character that cannot be part of a valid base64 string.', // deno
@@ -225,7 +229,7 @@ describe('Iron', () => {
 
     it('returns an error when hmac digest base64 decoding fails', async () => {
       const parts = (await Iron.seal(obj, password, Iron.defaults)).split('*')
-      parts[7] += '??' // mangle hmac digest (base64 decode runs before hmac verify)
+      parts[hmacDigestPart] += '??'
       await assertRejects(Iron.unseal(parts.join('*'), password, Iron.defaults), [
         'Invalid character', // node
         'Found a character that cannot be part of a valid base64 string.', // deno
@@ -251,7 +255,7 @@ describe('Iron', () => {
 
     it('returns an error when expiration NaN', async () => {
       const parts = (await Iron.seal(obj, password, Iron.defaults)).split('*')
-      parts[5] = 'a' // regex check rejects this before hmac verify
+      parts[expirationPart] = 'a' // regex check rejects this before hmac verify
       await assertRejects(Iron.unseal(parts.join('*'), password, Iron.defaults), 'Invalid expiration')
     })
   })
