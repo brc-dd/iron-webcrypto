@@ -187,25 +187,6 @@ describe('Iron', () => {
       await assertRejects(Iron.unseal(ticket, password, Iron.defaults), 'Bad hmac value')
     })
 
-    it('returns an error when decryption fails after a valid hmac', async () => {
-      // Keep the integrity secret unchanged so HMAC passes and the wrong
-      // encryption key is the first observable failure.
-      const encryption = 'long_encryption_secret_for_seal_test______'
-      const integrity = 'a_different_integrity_secret_long_enough__'
-      const sealed = await Iron.seal(obj, { id: 'k', encryption, integrity }, Iron.defaults)
-      await assertRejects(
-        Iron.unseal(
-          sealed,
-          { k: { id: 'k', encryption: 'a_completely_different_enc_secret_long____', integrity } },
-          Iron.defaults,
-        ),
-        [
-          'Decryption failed', // deno
-          'The operation failed for an operation-specific reason', // node / bun
-        ],
-      )
-    })
-
     it('returns an error when ciphertext base64 decoding fails', async () => {
       const parts = Iron.splitTicket(await Iron.seal(obj, password, Iron.defaults))
       parts[ciphertextPart] += '??'

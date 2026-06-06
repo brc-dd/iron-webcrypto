@@ -121,6 +121,13 @@ export type SealOptions = Readonly<{
   /**
    * Custom decoder for deserializing data after decryption. Defaults to `JSON.parse`. \
    * To align with `@hapi/iron`'s behavior, use `Bourne.parse`.
+   *
+   * A custom decoder should throw on input it cannot parse: the scheme authenticates the
+   * ciphertext but not the encryption key, so a wrong key can decrypt to garbage that a
+   * passthrough decoder would otherwise return as a valid result. This is a robustness
+   * concern, not an attack vector — forging an HMAC-valid ticket requires the integrity key,
+   * so only a caller with the wrong encryption secret (but the right integrity secret) is
+   * affected.
    */
   decode?: (data: string) => unknown
 }>

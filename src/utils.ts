@@ -1,7 +1,7 @@
 import { base64ToUint8Array, uint8ArrayToBase64, uint8ArrayToHex } from 'uint8array-extras'
 
 export const enc = /* @__PURE__ */ new TextEncoder()
-export const dec = /* @__PURE__ */ new TextDecoder()
+export const dec = /* @__PURE__ */ new TextDecoder('utf-8', { fatal: true })
 
 const jsBase64Enabled = /* @__PURE__ */ (() =>
   typeof Uint8Array.fromBase64 === 'function' &&
