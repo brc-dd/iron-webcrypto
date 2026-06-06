@@ -79,6 +79,8 @@ Background: [@hapi/iron docs](https://hapi.dev/module/iron/)
 - `saltBits`: Length of the randomly generated salt (default `256`).
 - `iterations`: PBKDF2 iterations for string passwords (default `1`).
 - `minPasswordLength`: Minimum string length (default `32`).
+- `salt` (advanced): Pin the derivation salt (hex) instead of generating one per seal — makes sealing deterministic.
+- `iv` (advanced, encryption only): Pin the initialization vector instead of generating one per seal.
 
 Additional seal options:
 

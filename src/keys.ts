@@ -1,4 +1,4 @@
-import type { Algorithms, EncryptionAlgorithm, GenerateKeyOptions, IntegrityAlgorithm, Key, Password } from './types.ts'
+import type { Algorithms, EncryptionAlgorithm, IntegrityAlgorithm, Key, Password, SealOptionsSub } from './types.ts'
 import { enc, u8ToHex } from './utils.ts'
 
 /** Configuration of each supported algorithm. */
@@ -124,8 +124,8 @@ function importRawIntegrityKey(
 export async function generateKeys(
   encryption: Password,
   integrity: Password,
-  encOptions: GenerateKeyOptions<EncryptionAlgorithm>,
-  intOptions: GenerateKeyOptions<IntegrityAlgorithm>,
+  encOptions: SealOptionsSub<EncryptionAlgorithm>,
+  intOptions: SealOptionsSub<IntegrityAlgorithm>,
   encSaltOverride?: string,
   ivOverride?: Uint8Array<ArrayBuffer>,
   intSaltOverride?: string,

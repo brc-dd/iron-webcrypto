@@ -1,9 +1,9 @@
 // deno-lint-ignore-file ban-ts-comment
 
-import { assertEquals, AssertionError } from '@std/assert'
 import { describe, it } from 'cross-bdd'
 import * as Iron from 'iron-webcrypto'
 import { randomBits } from '../src/keys.ts'
+import { assertEquals, assertRejects } from './assert.ts'
 
 describe('Iron', () => {
   const obj = { a: 1, b: 2, c: [3, 4, 5], d: { e: 'f' } }
@@ -125,7 +125,6 @@ describe('Iron', () => {
 
     it('returns an error when no salt and no salt bits are provided', async () => {
       const options = Iron.clone(Iron.defaults)
-      // @ts-expect-error
       options.encryption.saltBits = undefined
       await assertRejects(Iron.seal('data', password, options), 'Missing salt and saltBits options')
     })
@@ -208,7 +207,7 @@ describe('Iron', () => {
     })
 
     it('returns an error when ciphertext base64 decoding fails', async () => {
-      const parts = (await Iron.seal(obj, password, Iron.defaults)).split('*')
+      const parts = Iron.splitTicket(await Iron.seal(obj, password, Iron.defaults))
       parts[ciphertextPart] += '??'
       await assertRejects(Iron.unseal(parts.join('*'), password, Iron.defaults), [
         'Invalid character', // node
@@ -218,7 +217,7 @@ describe('Iron', () => {
     })
 
     it('returns an error when iv base64 decoding fails', async () => {
-      const parts = (await Iron.seal(obj, password, Iron.defaults)).split('*')
+      const parts = Iron.splitTicket(await Iron.seal(obj, password, Iron.defaults))
       parts[ivPart] += '??'
       await assertRejects(Iron.unseal(parts.join('*'), password, Iron.defaults), [
         'Invalid character', // node
@@ -228,7 +227,7 @@ describe('Iron', () => {
     })
 
     it('returns an error when hmac digest base64 decoding fails', async () => {
-      const parts = (await Iron.seal(obj, password, Iron.defaults)).split('*')
+      const parts = Iron.splitTicket(await Iron.seal(obj, password, Iron.defaults))
       parts[hmacDigestPart] += '??'
       await assertRejects(Iron.unseal(parts.join('*'), password, Iron.defaults), [
         'Invalid character', // node
@@ -254,27 +253,9 @@ describe('Iron', () => {
     })
 
     it('returns an error when expiration NaN', async () => {
-      const parts = (await Iron.seal(obj, password, Iron.defaults)).split('*')
+      const parts = Iron.splitTicket(await Iron.seal(obj, password, Iron.defaults))
       parts[expirationPart] = 'a' // regex check rejects this before hmac verify
       await assertRejects(Iron.unseal(parts.join('*'), password, Iron.defaults), 'Invalid expiration')
     })
   })
 })
-
-async function assertRejects(promise: Promise<unknown>, expectedMessage: string | string[]): Promise<void> {
-  let error = undefined
-  try {
-    await promise
-  } catch (err) {
-    error = err
-  }
-  if (!error) throw new AssertionError('Promise did not reject')
-  if (!(error instanceof Error)) throw new AssertionError('Rejected value is not an Error')
-  if (typeof expectedMessage === 'string') expectedMessage = [expectedMessage]
-  const matches = expectedMessage.some((msg) => error.message.includes(msg))
-  if (!matches) {
-    throw new AssertionError(
-      `Error message "${error.message}" does not include any of expected messages: ${expectedMessage.join(', ')}`,
-    )
-  }
-}

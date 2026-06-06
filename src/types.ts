@@ -25,29 +25,62 @@ export type Algorithms = Readonly<
 >
 
 /**
- * seal() method options.
+ * Per-step (`encryption` / `integrity`) options for {@link SealOptions}.
+ *
+ * The salt is supplied one of two ways, and at least one is required: provide `saltBits`
+ * to have a random salt generated on each seal, or provide a fixed `salt` directly (in
+ * which case `saltBits` is unused).
  */
-export type SealOptionsSub<Algorithm extends _Algorithm = _Algorithm> = Readonly<{
-  /**
-   * The length of the salt (random buffer used to ensure that two identical objects will generate a different encrypted result). Defaults to 256.
-   */
-  saltBits: number
+export type SealOptionsSub<Algorithm extends _Algorithm = _Algorithm> = Readonly<
+  & {
+    /**
+     * The algorithm used. Defaults to 'aes-256-cbc' for encryption and 'sha256' for integrity.
+     */
+    algorithm: Algorithm
 
-  /**
-   * The algorithm used. Defaults to 'aes-256-cbc' for encryption and 'sha256' for integrity.
-   */
-  algorithm: Algorithm
+    /**
+     * The number of iterations used to derive a key from the password. Defaults to 1.
+     */
+    iterations: number
 
-  /**
-   * The number of iterations used to derive a key from the password. Defaults to 1.
-   */
-  iterations: number
+    /**
+     * Minimum password size. Defaults to 32.
+     */
+    minPasswordLength: number
 
-  /**
-   * Minimum password size. Defaults to 32.
-   */
-  minPasswordLength: number
-}>
+    /**
+     * Advanced: a fixed initialization vector. Only meaningful for encryption algorithms —
+     * integrity options do not accept an IV. When omitted, a random IV is generated on each
+     * seal. Pinning the IV makes sealing deterministic — only do this if you understand the
+     * implications.
+     */
+    iv?: Algorithm extends EncryptionAlgorithm ? Uint8Array<ArrayBuffer> | undefined : never
+  }
+  & (
+    | {
+      /**
+       * The length of the salt (random buffer used to ensure that two identical objects will
+       * generate a different encrypted result), generated fresh on each seal. Defaults to 256.
+       */
+      saltBits: number
+
+      /** Advanced: a fixed salt; when present, takes precedence over `saltBits`. */
+      salt?: string | undefined
+    }
+    | {
+      /**
+       * Advanced: a fixed salt (hex string) used to derive the key, instead of generating a
+       * random one from `saltBits`. Only applies to string passwords (PBKDF2); ignored for raw
+       * key buffers. Pinning the salt makes sealing deterministic — only do this if you
+       * understand the implications.
+       */
+      salt: string
+
+      /** Unused when a fixed `salt` is provided. */
+      saltBits?: number | undefined
+    }
+  )
+>
 
 /**
  * Options for customizing the key derivation algorithm used to generate encryption and integrity verification keys as well as the algorithms and salt sizes used.
@@ -91,17 +124,6 @@ export type SealOptions = Readonly<{
    */
   decode?: (data: string) => unknown
 }>
-
-/**
- * generateKey() method options.
- */
-export type GenerateKeyOptions<Algorithm extends _Algorithm = _Algorithm> =
-  & Pick<SealOptionsSub<Algorithm>, 'algorithm' | 'iterations' | 'minPasswordLength'>
-  & {
-    saltBits?: number | undefined
-    salt?: string | undefined
-    iv?: Uint8Array<ArrayBuffer> | undefined
-  }
 
 /**
  * Generated internal key object.

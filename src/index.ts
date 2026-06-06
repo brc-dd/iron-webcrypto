@@ -128,6 +128,20 @@ export async function seal(object: unknown, password: password.Hash[string], opt
 }
 
 /**
+ * Splits an iron protocol string into its eight `*`-separated components, throwing if the
+ * count is wrong.
+ * @param sealed The sealed string.
+ * @returns The eight components: prefix, passwordId, encryptionSalt, iv, ciphertext, expiration, hmacSalt, hmacDigest.
+ *
+ * @internal
+ */
+export function splitTicket(sealed: string): TupleOf<8, string> {
+  const parts = sealed.split('*')
+  if (parts.length !== 8) throw new Error('Incorrect number of sealed components')
+  return parts as TupleOf<8, string>
+}
+
+/**
  * Verifies, decrypts, and reconstructs an object from an iron protocol string.
  * @param sealed The sealed string.
  * @param password The password to use for unsealing.
@@ -141,11 +155,8 @@ export async function unseal(
 ): Promise<unknown> {
   const now = Date.now() + (options.localtimeOffsetMsec || 0)
 
-  const parts = sealed.split('*')
-  if (parts.length !== 8) throw new Error('Incorrect number of sealed components')
-
-  const [prefix, passwordId, encryptionSalt, ivB64, encryptedB64, expiration, hmacSalt, hmacDigestB64] =
-    parts as TupleOf<8, string>
+  const [prefix, passwordId, encryptionSalt, ivB64, encryptedB64, expiration, hmacSalt, hmacDigestB64] = //
+    splitTicket(sealed)
 
   if (prefix !== macPrefix) throw new Error('Wrong mac prefix')
 
