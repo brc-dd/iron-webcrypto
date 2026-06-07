@@ -27,7 +27,7 @@
     "lint:fail": "deno lint",
     "test": "deno test --shuffle --trace-leaks",
     "test:watch": "deno test --watch",
-    "type": "deno check **/*.ts",
+    "type": "deno check src/**/*.ts tests/**/*.ts",
     "check:only": "deno task format:fail && deno task lint:fail && deno task type",
     "check": "deno task check:only && deno task test",
     "build": "deno task run #/build.ts --bundler=rolldown --jsr-name=@brc-dd/iron",
