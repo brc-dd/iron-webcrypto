@@ -150,12 +150,12 @@ export type HmacResult = Readonly<{
 }>
 
 /**
- * @deprecated Use {@link HmacResult} instead.
- */
-export type HMacResult = HmacResult
-
-/**
  * Password secret string or buffer.
+ *
+ * This must be a **high-entropy** secret, not a human-memorable passphrase. The default options
+ * derive keys with PBKDF2 at a single iteration, which provides no meaningful stretching, so the
+ * derived key is only as strong as the password itself. Generate it with a CSPRNG — e.g.
+ * `openssl rand -base64 32`, or `crypto.getRandomValues(new Uint8Array(32))`.
  */
 export type Password = Uint8Array | string
 

@@ -15,7 +15,10 @@
   "funding": "https://github.com/sponsors/brc-dd",
   "license": "MIT",
   "author": "Divyansh Singh <brc-dd@hotmail.com> (https://github.com/brc-dd)",
-  "exports": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./gcm": "./src/gcm.ts"
+  },
   "tasks": {
     "run": "deno -A jsr:@brc-dd/run@0.2.0 -- -A",
     "format": "deno fmt",
