@@ -4,7 +4,8 @@
  *
  * A single key both encrypts and authenticates the payload, and the ticket's non-secret metadata
  * is bound as additional authenticated data, so any tampering — or a wrong key — is detected on
- * unseal. A fresh salt and nonce are generated for every seal.
+ * unseal. A fresh salt and nonce are generated for every seal, so every ticket is encrypted under
+ * its own derived key.
  *
  * @example
  * ```ts
@@ -13,6 +14,16 @@
  * const secret = "f48865d781133e7a669c4fe3caf99b21"
  * const sealed = await seal({ hello: "world" }, secret)
  * const data = await unseal(sealed, secret) // { hello: "world" }
+ * ```
+ *
+ * For repeated use, {@link createSealer} imports the secret once and reuses it:
+ *
+ * ```ts
+ * import { createSealer } from "iron-webcrypto/gcm"
+ *
+ * const sealer = createSealer(secret, { ttl: 60 * 60 * 1000 })
+ * const sealed = await sealer.seal({ hello: "world" })
+ * const data = await sealer.unseal(sealed)
  * ```
  *
  * @module
@@ -32,7 +43,7 @@ const KEY_BITS = 256
 const IV_BITS = 96
 const TAG_BITS = 128
 
-/** Bits of random salt generated per seal for string passwords. */
+/** Bits of random HKDF salt generated per seal. */
 const SALT_BITS = 256
 
 /** Minimum length of a string password. */
@@ -73,6 +84,15 @@ export type GcmPassword = Password | Readonly<{ id?: string | undefined; secret:
 /** Maps a password id to its {@link GcmPassword}, for selecting a secret by id on unseal. */
 export type GcmPasswordHash = Readonly<{ [id: string]: GcmPassword }>
 
+/** A {@link seal}/{@link unseal} pair bound to a password, returned by {@link createSealer}. */
+export type GcmSealer = Readonly<{
+  /** Seals a value. Per-call `options` override those given to {@link createSealer}. */
+  seal: (object: unknown, options?: GcmSealOptions) => Promise<string>
+
+  /** Unseals a ticket. Per-call `options` override those given to {@link createSealer}. */
+  unseal: (sealed: string, options?: GcmSealOptions) => Promise<unknown>
+}>
+
 /** Protocol format version, carried in the ticket {@link prefix}. */
 export const formatVersion = '3'
 
@@ -90,8 +110,14 @@ function normalizePassword(password: GcmPassword | undefined): password.Secret {
   if (!normalized || !normalized.secret || normalized.secret.length === 0) {
     throw new Error('Empty password')
   }
+  if (normalized.id && !/^\w+$/.test(normalized.id)) throw new Error('Invalid password id')
 
   return normalized
+}
+
+function isPasswordHash(password: GcmPassword | GcmPasswordHash): password is GcmPasswordHash {
+  return typeof password === 'object' && password !== null && !(password instanceof Uint8Array) &&
+    !('secret' in password)
 }
 
 function passwordFromHash(password: Password | GcmPasswordHash, passwordId: string): GcmPassword | undefined {
@@ -105,50 +131,44 @@ function passwordFromHash(password: Password | GcmPasswordHash, passwordId: stri
 }
 
 /**
- * Derives a non-extractable AES-GCM key scoped to a single `usage` ('encrypt' for sealing,
- * 'decrypt' for unsealing). String passwords are run through HKDF-SHA256 with the per-seal salt;
- * raw key buffers are imported directly.
+ * Imports a secret as a non-extractable HKDF base key. String passwords are UTF-8 encoded; raw
+ * key buffers are used as-is.
  */
-async function deriveKey(secret: Password, salt: string, usage: 'encrypt' | 'decrypt'): Promise<CryptoKey> {
+function importBaseKey(secret: Password): Promise<CryptoKey> {
+  let material: Uint8Array<ArrayBuffer>
   if (typeof secret === 'string') {
     if (secret.length < MIN_PASSWORD_LENGTH) {
       throw new Error(`Password string too short (min ${MIN_PASSWORD_LENGTH} characters required)`)
     }
-    const baseKey = await crypto.subtle.importKey('raw', enc.encode(secret), 'HKDF', false, ['deriveKey'])
-    return crypto.subtle.deriveKey(
-      { name: 'HKDF', hash: 'SHA-256', salt: enc.encode(salt), info: enc.encode(HKDF_INFO) },
-      baseKey,
-      { name: 'AES-GCM', length: KEY_BITS },
-      false,
-      [usage],
-    )
+    material = enc.encode(secret)
+  } else {
+    if (secret.length < KEY_BITS / 8) throw new Error('Key buffer (password) too small')
+    material = secret.slice()
   }
-
-  if (secret.length < KEY_BITS / 8) throw new Error('Key buffer (password) too small')
-  return crypto.subtle.importKey('raw', secret.slice(), { name: 'AES-GCM', length: KEY_BITS }, false, [usage])
+  return crypto.subtle.importKey('raw', material, 'HKDF', false, ['deriveKey'])
 }
 
 /**
- * Serializes, encrypts, and authenticates a value into a ticket string.
- * @param object The value to seal.
- * @param password The password to seal with.
- * @param options Optional settings; see {@link GcmSealOptions}.
- * @returns The sealed ticket string.
+ * Derives a non-extractable AES-GCM key scoped to a single `usage` ('encrypt' for sealing,
+ * 'decrypt' for unsealing). The base key is run through HKDF-SHA256 with the per-seal salt.
  */
-export async function seal(
-  object: unknown,
-  password: GcmPassword,
-  options: GcmSealOptions = {},
-): Promise<string> {
-  const now = Date.now() + (options.localtimeOffsetMsec ?? 0)
+function deriveKey(baseKey: CryptoKey, salt: string, usage: 'encrypt' | 'decrypt'): Promise<CryptoKey> {
+  return crypto.subtle.deriveKey(
+    { name: 'HKDF', hash: 'SHA-256', salt: enc.encode(salt), info: enc.encode(HKDF_INFO) },
+    baseKey,
+    { name: 'AES-GCM', length: KEY_BITS },
+    false,
+    [usage],
+  )
+}
 
-  const { id = '', secret } = normalizePassword(password)
-  if (id && !/^\w+$/.test(id)) throw new Error('Invalid password id')
+async function sealWithKey(object: unknown, id: string, baseKey: CryptoKey, options: GcmSealOptions): Promise<string> {
+  const now = Date.now() + (options.localtimeOffsetMsec ?? 0)
 
   const dataString = (options.encode ?? losslessJsonStringify)(object)
 
-  const salt = typeof secret === 'string' ? u8ToHex(randomBits(SALT_BITS)) : ''
-  const key = await deriveKey(secret, salt, 'encrypt')
+  const salt = u8ToHex(randomBits(SALT_BITS))
+  const key = await deriveKey(baseKey, salt, 'encrypt')
   const iv = randomBits(IV_BITS)
   const ivB64 = u8ToB64(iv)
 
@@ -165,6 +185,58 @@ export async function seal(
   )
 
   return `${prefix}*${id}*${salt}*${ivB64}*${u8ToB64(encrypted)}*${expiration}`
+}
+
+async function unsealWithKey(
+  sealed: string,
+  getBaseKey: (passwordId: string) => Promise<CryptoKey>,
+  options: GcmSealOptions,
+): Promise<unknown> {
+  const now = Date.now() + (options.localtimeOffsetMsec ?? 0)
+
+  const [ticketPrefix, passwordId, salt, ivB64, encryptedB64, expiration] = splitTicket(sealed)
+
+  if (ticketPrefix !== prefix) throw new Error('Wrong prefix')
+
+  if (expiration) {
+    if (!/^[1-9]\d*$/.test(expiration)) throw new Error('Invalid expiration')
+    const exp = Number.parseInt(expiration, 10)
+    if (exp <= now - (options.timestampSkewSec ?? 60) * 1000) throw new Error('Expired seal')
+  }
+
+  const baseKey = getBaseKey(passwordId)
+
+  const iv = b64ToU8(ivB64)
+  const encrypted = b64ToU8(encryptedB64)
+
+  const key = await deriveKey(await baseKey, salt, 'decrypt')
+
+  // Recompute the same AAD as seal. A tampered field or wrong key fails the tag check, which
+  // throws the runtime's native AES-GCM error (a DOMException named OperationError).
+  const aad = `${prefix}*${passwordId}*${salt}*${ivB64}*${expiration}`
+  const decrypted = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv, additionalData: enc.encode(aad), tagLength: TAG_BITS },
+    key,
+    encrypted,
+  )
+
+  return (options.decode ?? jsonParse)(dec.decode(decrypted))
+}
+
+/**
+ * Serializes, encrypts, and authenticates a value into a ticket string.
+ * @param object The value to seal.
+ * @param password The password to seal with.
+ * @param options Optional settings; see {@link GcmSealOptions}.
+ * @returns The sealed ticket string.
+ */
+export async function seal(
+  object: unknown,
+  password: GcmPassword,
+  options: GcmSealOptions = {},
+): Promise<string> {
+  const { id = '', secret } = normalizePassword(password)
+  return sealWithKey(object, id, await importBaseKey(secret), options)
 }
 
 /**
@@ -185,38 +257,48 @@ export function splitTicket(sealed: string): TupleOf<6, string> {
  * @param options Optional settings; see {@link GcmSealOptions}.
  * @returns The unsealed value.
  */
-export async function unseal(
+export function unseal(
   sealed: string,
   password: Password | GcmPasswordHash,
   options: GcmSealOptions = {},
 ): Promise<unknown> {
-  const now = Date.now() + (options.localtimeOffsetMsec ?? 0)
+  return unsealWithKey(
+    sealed,
+    (passwordId) => importBaseKey(normalizePassword(passwordFromHash(password, passwordId)).secret),
+    options,
+  )
+}
 
-  const [ticketPrefix, passwordId, salt, ivB64, encryptedB64, expiration] = splitTicket(sealed)
+/**
+ * Creates a {@link GcmSealer} that imports the secret once, as a non-extractable `CryptoKey`,
+ * and reuses it across calls.
+ *
+ * With a {@link GcmPasswordHash}, tickets are sealed under the first entry and unsealed under any
+ * entry, so `{ v2: current, v1: previous }` rotates secrets.
+ *
+ * @param password The password, or a hash of passwords keyed by id.
+ * @param options Default settings for every call; see {@link GcmSealOptions}.
+ * @returns The sealer.
+ */
+export function createSealer(password: GcmPassword | GcmPasswordHash, options: GcmSealOptions = {}): GcmSealer {
+  const hash = isPasswordHash(password)
+  const sealId = hash ? Object.keys(password)[0] ?? '' : normalizePassword(password).id ?? ''
 
-  if (ticketPrefix !== prefix) throw new Error('Wrong prefix')
-
-  if (expiration) {
-    if (!/^[1-9]\d*$/.test(expiration)) throw new Error('Invalid expiration')
-    const exp = Number.parseInt(expiration, 10)
-    if (exp <= now - (options.timestampSkewSec ?? 60) * 1000) throw new Error('Expired seal')
+  const baseKeys = new Map<string, Promise<CryptoKey>>()
+  const getBaseKey = (passwordId: string): Promise<CryptoKey> => {
+    const cacheKey = hash ? passwordId || 'default' : ''
+    let baseKey = baseKeys.get(cacheKey)
+    if (!baseKey) {
+      const entry = hash ? passwordFromHash(password, passwordId) : password
+      baseKey = importBaseKey(normalizePassword(entry).secret)
+      baseKeys.set(cacheKey, baseKey)
+    }
+    return baseKey
   }
 
-  const { secret } = normalizePassword(passwordFromHash(password, passwordId))
-
-  const iv = b64ToU8(ivB64)
-  const encrypted = b64ToU8(encryptedB64)
-
-  const key = await deriveKey(secret, salt, 'decrypt')
-
-  // Recompute the same AAD as seal. A tampered field or wrong key fails the tag check, which
-  // throws the runtime's native AES-GCM error (a DOMException named OperationError).
-  const aad = `${prefix}*${passwordId}*${salt}*${ivB64}*${expiration}`
-  const decrypted = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv, additionalData: enc.encode(aad), tagLength: TAG_BITS },
-    key,
-    encrypted,
-  )
-
-  return (options.decode ?? jsonParse)(dec.decode(decrypted))
+  return {
+    seal: async (object, callOptions) =>
+      sealWithKey(object, sealId, await getBaseKey(sealId), { ...options, ...callOptions }),
+    unseal: (sealed, callOptions) => unsealWithKey(sealed, getBaseKey, { ...options, ...callOptions }),
+  }
 }

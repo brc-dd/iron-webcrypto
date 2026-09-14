@@ -83,10 +83,12 @@ describe('Iron (HKDF + AES-GCM)', () => {
     assertEquals(unsealed, obj)
   })
 
-  it('omits the salt for raw key buffers', async () => {
+  it('uses a fresh salt for raw key buffers too', async () => {
     const key = randomBits(256)
-    const sealed = await Gcm.seal(obj, key)
-    assertEquals(sealed.split('*')[saltPart], '')
+    const a = Gcm.splitTicket(await Gcm.seal(obj, key))
+    const b = Gcm.splitTicket(await Gcm.seal(obj, key))
+    assertEquals(a[saltPart].length, 64)
+    assertNotEquals(a[saltPart], b[saltPart])
   })
 
   it('turns object into a ticket then parses the ticket successfully (password buffer in object)', async () => {
@@ -234,6 +236,50 @@ describe('Iron (HKDF + AES-GCM)', () => {
       const parts = Gcm.splitTicket(await Gcm.seal(obj, password))
       parts[expirationPart] = 'a' // regex check rejects this before decryption
       await assertRejects(Gcm.unseal(parts.join('*'), password), 'Invalid expiration')
+    })
+  })
+
+  describe('createSealer()', () => {
+    it('interoperates with the standalone functions', async () => {
+      const key = randomBits(256)
+      const sealer = Gcm.createSealer(key)
+      assertEquals(await sealer.unseal(await sealer.seal(obj)), obj)
+      assertEquals(await Gcm.unseal(await sealer.seal(obj), key), obj)
+      assertEquals(await sealer.unseal(await Gcm.seal(obj, key)), obj)
+    })
+
+    it('applies default options and per-call overrides', async () => {
+      const sealer = Gcm.createSealer(password, { ttl: 200, localtimeOffsetMsec: -100_000 })
+      const sealed = await sealer.seal(obj)
+      assertNotEquals(Gcm.splitTicket(sealed)[expirationPart], '')
+      assertEquals(await sealer.unseal(sealed), obj)
+      await assertRejects(sealer.unseal(sealed, { localtimeOffsetMsec: 0 }), 'Expired seal')
+      assertEquals(Gcm.splitTicket(await sealer.seal(obj, { ttl: 0 }))[expirationPart], '')
+    })
+
+    it('stamps the password id into the ticket', async () => {
+      const sealed = await Gcm.createSealer({ id: 'abc', secret: password }).seal(obj)
+      assertEquals(Gcm.splitTicket(sealed)[idPart], 'abc')
+      assertEquals(await Gcm.unseal(sealed, { abc: password }), obj)
+    })
+
+    it('seals with the first hash entry and unseals any entry', async () => {
+      const current = randomBits(256)
+      const sealer = Gcm.createSealer({ v2: current, v1: password })
+      const sealed = await sealer.seal(obj)
+      assertEquals(Gcm.splitTicket(sealed)[idPart], 'v2')
+      assertEquals(await sealer.unseal(sealed), obj)
+      assertEquals(await sealer.unseal(await Gcm.seal(obj, { id: 'v1', secret: password })), obj)
+      await assertRejects(
+        sealer.unseal(await Gcm.seal(obj, { id: 'v3', secret: password })),
+        'Cannot find password: v3',
+      )
+    })
+
+    it('rejects a wrong or short password', async () => {
+      await assertAuthFailure(Gcm.createSealer(password).unseal(await Gcm.seal(obj, altPassword)))
+      await assertRejects(Gcm.createSealer('short').seal(obj), 'Password string too short')
+      await assertRejects(Gcm.createSealer(randomBits(128)).seal(obj), 'Key buffer (password) too small')
     })
   })
 

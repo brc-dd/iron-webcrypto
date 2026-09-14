@@ -99,6 +99,27 @@ Additional seal options:
 
 Most functions throw when inputs are missing, too short, or malformed (e.g., unknown algorithms, invalid Base64, expired token, or unserializable data). Catch and handle these to swallow errors or surface meaningful responses to callers.
 
+## AEAD Variant (`iron-webcrypto/gcm`)
+
+The `/gcm` subpath seals with AES-256-GCM under a key derived via HKDF-SHA256. It produces a shorter `Fe26.3*...` token, needs no `SealOptions` boilerplate, and authenticates the token's framing (password id, salt, nonce, expiration) as additional data. Tokens from the two subpaths are not interchangeable.
+
+```ts
+import { createSealer, seal, unseal } from 'iron-webcrypto/gcm'
+
+const sealed = await seal(payload, password, { ttl: 60 * 60 * 1000 })
+const unsealed = await unseal(sealed, password)
+
+// or import the secret once and reuse it
+const sealer = createSealer(password, { ttl: 60 * 60 * 1000 })
+const sealed2 = await sealer.seal(payload)
+const unsealed2 = await sealer.unseal(sealed2)
+```
+
+- `seal(object, password, options?)` / `unseal(sealed, password, options?)`: Same shapes as the main entry point; `options` accepts `ttl`, `timestampSkewSec`, `localtimeOffsetMsec`, `encode` and `decode`, all optional.
+- `createSealer(password, options?)`: Returns a `{ seal, unseal }` pair holding the imported secret as a non-extractable `CryptoKey`. Per-call options override the ones given here. With a hash, tickets are sealed under the first entry and unsealed under any, so `{ v2: current, v1: previous }` rotates secrets.
+- Passwords are a string (32+ characters), a `Uint8Array` (32+ bytes) or `{ id, secret }`. There is no split encryption/integrity form: one key does both.
+- HKDF does no password stretching, so the secret must come from a CSPRNG (`openssl rand -base64 32`).
+
 ## Advanced Usage
 
 ### Custom Serialization
