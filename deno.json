@@ -30,12 +30,12 @@
     "type": "deno check src/**/*.ts tests/**/*.ts",
     "check:only": "deno task format:fail && deno task lint:fail && deno task type",
     "check": "deno task check:only && deno task test",
-    "build": "deno task run #/build.ts --bundler=rolldown --jsr-name=@brc-dd/iron",
-    "release": "deno task run #/release.ts",
-    "update": "deno task run #/update.ts"
+    "build": "deno task run !/build.ts --bundler=rolldown --jsr-name=@brc-dd/iron",
+    "release": "deno task run !/release.ts",
+    "update": "deno task run !/update.ts"
   },
   "imports": {
-    "#/": "https://raw.githubusercontent.com/globalbrain/hado/v0.20.0/scripts/",
+    "!/": "https://raw.githubusercontent.com/globalbrain/hado/v0.21.0/scripts/",
     "@std/assert": "jsr:@std/assert@^1.0.19",
     "cross-bdd": "npm:cross-bdd@^0.2.0",
     "uint8array-extras": "npm:uint8array-extras@^1.5.0"
